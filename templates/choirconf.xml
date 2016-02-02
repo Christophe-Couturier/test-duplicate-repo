@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Configuration for Choir -->
+<!-- -->
 <configuration>
     <globalconf
         its_su_id           = "$station_id"
         drop_own_msgs       = "true"
-        stationtype         = "0"
+        stationtype         = "$station_type"
         port_ipc            = "49154"
 	itssecurity         = "false"
         start_services      = "true" />
@@ -13,14 +14,17 @@
          <service name="SpatService" class="fr.yogoko.choir.facilities.spatservice.SpatService"/>
          <service name="CaService" class="fr.yogoko.choir.facilities.caservice.CaServiceImpl"/>
          <service name="V2XAdapter" class="fr.yogoko.choir.facilities.v2xservice.V2XAdapter"/>
-         <service name="VehicleDiagnosis" class="fr.yogoko.choir.facilities.stationdiagnostics.BasicDiagnosisHandlerImpl"/>
+         <service name="VdpService" class="fr.yogoko.choir.facilities.vehicledataprovisioning.VdpService"/>
          <service name="PositionProvider" class="fr.yogoko.choir.facilities.positionmanager.PositionProviderImpl"/>
          <service name="TrafficLight" class="fr.yogoko.choir.facilities.trafficlight.TrafficLightSender"/>
+         <service name="DenService" class="fr.yogoko.choir.facilities.denservice.DenServiceImpl"/>
+         <service name="LdmService" class="fr.yogoko.choir.facilities.ldm.LdmService"/>
+         <service name="RhsService" class="fr.yogoko.choir.facilities.rhsservice.RhsService"/>
     </services>
 
-	<websocket
-		enabled     = "false"
-		port        = "8080" />
+    <websocket
+        enabled    = "true"
+        port       = "8080" />
 
     <uppertester
         enabled             = "false"
@@ -28,7 +32,20 @@
         remote_ip           = "10.200.60.84"
         remote_port         = "4001" />
 
-    <facilities
-        enableposition = "false"
-        enablestationdiagnostics = "true"/>
+	<caches>
+		<!--  VDP cache configuration (CAN/GPS)-->
+		<cache id="0" timeToLiveSecond="-2147483648" size="65535"/>
+		<!--  CAM cache configuration -->
+		<cache id="1" timeToLiveSecond="-2147483648" size="65535"/>
+		<!-- DENM originating cache-->
+		<cache id="2" timeToLiveSecond="-2147483648" size="65535"/>
+		<!-- DENM receiving cache -->
+		<cache id="21" timeToLiveSecond="-2147483648" size="65535"/>
+		<!-- DENM forwarding cache -->
+		<cache id="22" timeToLiveSecond="-2147483648" size="65535"/>
+		<!--  Default cache configuration-->
+		<cache id="default" timeToLiveSecond="-2147483648" size="65535"/>
+	</caches>
+
+
 </configuration> 
