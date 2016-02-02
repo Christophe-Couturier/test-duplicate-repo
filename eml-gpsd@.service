@@ -1,0 +1,10 @@
+[Unit]
+Description=GPS (Global Positioning System) Daemon
+After=eml-netns@%i.service eml-mw-server@%i.service eml-gpsfwd@%i.service
+Requires=eml-netns@%i.service eml-mw-server@%i.service eml-gpsfwd@%i.service
+
+[Service]
+ExecStart=/sbin/ip netns exec %i /usr/sbin/gpsd -N tcp://127.0.0.1:5555
+
+[Install]
+WantedBy=multi-user.target

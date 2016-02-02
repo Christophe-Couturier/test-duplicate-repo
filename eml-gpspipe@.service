@@ -1,0 +1,13 @@
+[Unit]
+Description=GPS (Global Positioning System) Pipe
+After=eml-netns@%i.service eml-mw-server@%i.service eml-gpsfwd@%i.service eml-gpsd@%i.service
+Requires=eml-netns@%i.service eml-mw-server@%i.service eml-gpsfwd@%i.service eml-gpsd@%i.service
+
+[Service]
+StandardOutput=null
+ExecStart=/usr/bin/timeout 3 /sbin/ip netns exec %i /usr/bin/gpspipe -w
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

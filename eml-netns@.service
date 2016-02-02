@@ -1,0 +1,13 @@
+[Unit]
+Description=Create netns and veth pairs for ITS station
+After=network.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=true
+ExecStart=/usr/bin/setup_netns start %i
+ExecStop=/usr/bin/setup_netns stop %i
+
+[Install]
+WantedBy=multi-user.target
+

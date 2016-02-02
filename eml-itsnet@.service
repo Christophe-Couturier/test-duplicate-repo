@@ -1,0 +1,12 @@
+[Unit]
+Description=GeoNetworking daemon
+After=network.target remote-fs.target nss-lookup.target eml-netns@%i.service
+Requires=eml-netns@%i.service
+
+[Service]
+Type=simple
+#ExecStartPre=/usr/bin/configure_mac %i
+ExecStart=/sbin/ip netns exec %i /usr/bin/itsnet -c /var/lib/itseml/%i/itsnet.conf -d
+
+[Install]
+WantedBy=multi-user.target
