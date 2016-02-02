@@ -13,8 +13,6 @@ fi
 mkdir -p /var/run/itseml/${NETNS}
 
 cp /usr/share/doc/cargeo6/itsnet.conf /var/run/itseml/${NETNS}/itsnet.conf
-sed -i -e "s,^#IpcSocket.*,IpcSocket = /var/run/itseml/${NETNS}/GN_IPC.sock," \
-       -e "s,^#SAPSocket.*,SAPSocket = /var/run/itseml/${NETNS}/GN_SAP.sock," \
-       -e "s,^#ItsnetLog.*,ItsnetLog = /var/log/itseml/${NETNS}/itsnet.log," \
+sed -i -e "s,^#SAPSocket.*,SAPSocket = /var/run/itseml/${NETNS}/GN_SAP.sock," \
        -e "s/0:0:0:1/$ADDR/" \
        /var/run/itseml/${NETNS}/itsnet.conf
