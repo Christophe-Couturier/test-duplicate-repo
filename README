@@ -1,0 +1,38 @@
+The goal is to setup a ITS station emulator.
+
+To achieve this, we run multiple instances of an ITS stack, each in a
+different network namespace.
+
+
+
+An ITS stack is currenctly defined as:
+
+ - itsnet
+ - mwtun
+ - mw-server
+ - gpsd
+
+Each ITS stack runs in a network namespace named:
+ - envX
+
+For each instance, two veth pairs are created:
+ - vtxX <-> veth0
+ - ctlX <-> ctl0
+
+The different vtxX devices are bridged together.
+
+
+There are various components/configurations needed to achieve a workable
+setup:
+ - bridge configuration: done in /etc/network/interfaces
+ - netns setup: done via a systemd unit.
+ - itsnet: is started via systemd unit (w/ ExecStart=/sbin/ip netns exec %i itsnet...)
+ - mwtun: is started via systemd unit (w/ ExecStart=/sbin/ip netns exec %i mwtun...)
+ - gps: started via systemd unit (w/ ExecStart=/sbin/ip netns exec %i gpsfake...)
+   Using gpsd to connect to another gpsd device requires setting up IP routing.
+
+ - mw-server: is started via systemd unit (w/ ExecStart=/sbin/ip netns exec %i mw-server...)
+
+Configuration of itsnet
+ - Copy the file installed by the cargeo6 package in /usr/share/doc
+ - Adjust parameters
