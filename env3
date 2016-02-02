@@ -1,0 +1,5 @@
+ENVNAME=env3
+#MAC_ADDR="00:aa:bb:cc:dd:fe"
+MW_PATH=/root/mw-server/
+CTL_IP="10.1.1.5/30"
+ENV_IP="10.1.1.6/30"
