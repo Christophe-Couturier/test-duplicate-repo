@@ -1,0 +1,20 @@
+#!/bin/sh
+
+NETNS="$1"
+
+ADDR=$(echo 0000$2 | sed -e 's/://g' -e 's/.\{4\}/&:/g' -e 's/:$//')
+
+if [ ${ADDR} = 0000 ]; then
+    ADDR=$(ip netns exec ${NETNS} ip -o l show eth0 | \
+       sed -e 's/^.*ether //' -e 's/://g' -e 's/^/0000/' | \
+       awk '{print $1;}' | sed -e 's/.\{4\}/&:/g' -e 's/:$//')
+fi
+
+mkdir -p /var/run/itseml/${NETNS}
+
+cp /usr/share/doc/cargeo6/itsnet.conf /var/run/itseml/${NETNS}/itsnet.conf
+sed -i -e "s,^#IpcSocket.*,IpcSocket = /var/run/itseml/${NETNS}/GN_IPC.sock," \
+       -e "s,^#SAPSocket.*,SAPSocket = /var/run/itseml/${NETNS}/GN_SAP.sock," \
+       -e "s,^#ItsnetLog.*,ItsnetLog = /var/log/itseml/${NETNS}/itsnet.log," \
+       -e "s/0:0:0:1/$ADDR/" \
+       /var/run/itseml/${NETNS}/itsnet.conf
