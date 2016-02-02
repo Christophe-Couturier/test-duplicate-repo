@@ -1,0 +1,41 @@
+#!/bin/sh
+
+BRIDGE=v2xbr
+
+case "$1" in
+start)
+	shift
+	NETNS="$1"
+	ID=${NETNS##env}
+
+	ip netns add ${NETNS}
+	ip netns exec ${NETNS} ip a a 127.0.0.1/8 dev lo
+	ip netns exec ${NETNS} ip a a ::1/128 dev lo
+	ip netns exec ${NETNS} ip l s lo up
+
+	ip link add vtx${ID} type veth peer name eth0 netns ${NETNS}
+	ip link add ctl${ID} type veth peer name eth1 netns ${NETNS}
+
+	ip link set vtx${ID} up master ${BRIDGE}
+	ip link set ctl${ID} up
+
+	ip netns exec ${NETNS} ip link set eth0 up
+	ip netns exec ${NETNS} ip link set eth1 up
+;;
+stop)
+	shift
+	NETNS="$1"
+	ID=${NETNS##env}
+
+	ip link del vtx${ID}
+	ip link del ctl${ID}
+	ip netns del ${NETNS}
+;;
+*)
+	echo "Setup a network namespace and two veth pairs"
+	echo "\t${0} start|stop envX"
+	exit 1
+;;
+esac
+
+exit 0
