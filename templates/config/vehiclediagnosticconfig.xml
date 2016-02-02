@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+	<service start="false" instance="0">VehicleDiagnosis</service>
+	<config>
+		<!-- Message Id for choir protocol -->
+		<pubsub incanjson="100" outcanjson="100" />
+		<!-- Application Id for choir protocol -->
+		<applicationid value="84" />
+		<!-- specific configuration for vehicule diagnostic -->
+		<vehicle type=""/>
+	</config>
+</configuration>

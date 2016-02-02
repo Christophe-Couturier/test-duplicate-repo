@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+	<service start="true" instance="0">V2XAdapter</service>
+	<config>
+			<!-- number of senders and receivers -->
+			<index sender="2" receiver="2"/>	
+			<!-- receiver parameter interface, multicast address, port and choir message id -->
+			<receiver1 iface="tun0" group="ff02::4567" port="2001"	publish="12" header="false"/>
+			<receiver2 iface="tun0" group="ff02::1234" port="2002"	publish="15" header="true"/>
+			<!-- sender parameter interface, multicast address, port, choir message id and application id -->
+			<sender1 iface="tun0" group="ff02::4567" port="2001" subscribe="2"	appid="2002" header="false"/>
+			<sender2 iface="tun0" group="ff02::1234" port="2002" subscribe="5"	appid="2005" header="true"/>
+	</config>
+</configuration>
