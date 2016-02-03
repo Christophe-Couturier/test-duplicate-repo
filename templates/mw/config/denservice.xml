@@ -9,6 +9,12 @@
 		<!-- Enable the DENM forwarding service -->
 		<forwarding value="$forwarding"/>
 
+		<!-- Enable ActionID forcing -->
+		<forceactionid enabled="$forceactionid"/>
+
+		<!-- Enable autoUpdate of DENM -->
+		<autoupdate enabled="$autoupdate"/>
+
 		<!-- Cache for DENM -->
 		<cache originating="2" reciving="21" forward="22"/>
 	</config>

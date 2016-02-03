@@ -168,10 +168,12 @@ def _dict_update(source, overrides):
 def process_message(params):
     defaults = {
         "gn": {
-            "geobc_fwd_alg": 0
+            "geobc_fwd_alg": 0,
         },
         "denm": {
-            "forwarding": True
+            "forwarding": True,
+            "forceactionid": False,
+            "autoupdate": False,
         },
     }
 
