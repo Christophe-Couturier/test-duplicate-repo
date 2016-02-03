@@ -1,5 +1,6 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
+import collections
 import distutils.dir_util
 import fcntl
 import logging
@@ -151,24 +152,48 @@ def generate_configuration(params, envname):
     logging.info("Creating configuration for mw-server: choirconf.xml")
     _process(tpl_params, "mw/choirconf.xml")
 
+def _dict_update(source, overrides):
+    """Update a nested dictionary
+
+    Modify ``source`` in place.
+    """
+    for key, value in overrides.iteritems():
+        if isinstance(value, collections.Mapping) and value:
+            returned = _dict_update(source.get(key, {}), value)
+            source[key] = returned
+        else:
+            source[key] = overrides[key]
+    return source
 
 def process_message(params):
-    envname = "env" + str(params["id"])
+    defaults = {
+        "gn": {
+            "geobc_fwd_alg": 0
+        },
+        "denm": {
+            "forwarding": True
+        },
+    }
 
-    logging.debug("Processing received JSON:\n%s", pprint.pformat(params))
+
+    defaults = _dict_update(defaults, params)
+
+    envname = "env" + str(defaults["id"])
+
+    logging.debug("Processing received JSON:\n%s", pprint.pformat(defaults))
 
     try:
         status_env(envname)
     except subprocess.CalledProcessError, e:
-        if params['action'] == 'start':
-            start_env(params, envname)
-        elif params['action'] == 'stop':
+        if defaults['action'] == 'start':
+            start_env(defaults, envname)
+        elif defaults['action'] == 'stop':
             logging.info("Environment %s already stopped", envname)
     else:
-        if params['action'] == 'start':
+        if defaults['action'] == 'start':
             logging.info("Environment %s already started", envname)
-        elif params['action'] == 'stop':
-            stop_env(envname, params["id"])
+        elif defaults['action'] == 'stop':
+            stop_env(envname, defaults["id"])
 
 if __name__ == '__main__':
     msg = json.load(sys.stdin)
