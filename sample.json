@@ -1,0 +1,27 @@
+{ 
+  "action": "start",
+  "id": 1,
+  "gn": {
+     "geobc_forwarding": 0
+  },
+  "cam": {
+     "vehicle_length": 5,
+     "vehicle_width": 2,
+     "confidence": 0,
+     "exteriorlights": 0,
+     "vehiclerole": 0,
+     "embarkationstatus": false,
+     "specialtransportlightbar": 0,
+     "specialtransporttype": 0,
+     "dangerousgoodsbasic": 0,
+     "roadworkslightbar": 0,
+     "rescuelightbar": 0,
+     "emergencylightbar": 0,
+     "safetycarlightbar": 0
+  },
+  "denm_forwarding": true,
+  "position": {
+     "lat": "48.837590",
+     "lon": "2.101363"
+  }
+}
