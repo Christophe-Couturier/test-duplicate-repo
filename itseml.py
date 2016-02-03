@@ -100,8 +100,8 @@ def _service_action(action, envname):
     for svc in svcs:
         subprocess.check_call("systemctl %s %s@%s" % (action, svc, envname), shell=True)
 
-def stop_env(envname):
-    _network_conf(params['id'], "del")
+def stop_env(envname, envid):
+    _network_conf(envid, "del")
     _service_action('stop', envname)
     logging.info("Stopped environment: %s" % (envname))
 
@@ -168,8 +168,7 @@ def process_message(params):
         if params['action'] == 'start':
             logging.info("Environment %s already started", envname)
         elif params['action'] == 'stop':
-            stop_env(envname)
-
+            stop_env(envname, params["id"])
 
 if __name__ == '__main__':
     msg = json.load(sys.stdin)
