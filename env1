@@ -1,6 +1,0 @@
-ENVNAME=env1
-MAC_ADDR="00:aa:bb:cc:dd:ee"
-MW_PATH=/root/git/middleware/binaries/mw-server
-CTL_IP="10.1.1.1/30"
-ENV_IP="10.1.1.2/30"
-
