@@ -81,8 +81,11 @@ def _network_conf(envnum, action):
 
 
 def _service_action(action, envname):
-    for svc in ['eml-netns', 'eml-itsnet', 'eml-mwtun', 'eml-mw-server', 'eml-gpsfwd',
-		'eml-gpsd', 'eml-gpspipe']:
+    svcs = ['eml-netns', 'eml-itsnet', 'eml-mwtun', 'eml-mw-server',
+		'eml-gpsfwd', 'eml-gpsd', 'eml-gpspipe']
+    if "is-active" in action:
+        svcs.remove('eml-gpspipe')
+    for svc in svcs:
         subprocess.check_call("systemctl %s %s@%s" % (action, svc, envname), shell=True)
 
 def stop_env(envname):
@@ -91,7 +94,7 @@ def stop_env(envname):
     print ("Stopped environnment: %s" % (envname))
 
 def status_env(envname):
-    _service_action('status', envname)
+    _service_action('is-active -q', envname)
 
 def generate_configuration(params, envname):
     # Copy files that don't need modifications
@@ -137,13 +140,20 @@ def generate_configuration(params, envname):
 
 if __name__ == '__main__':
     params = json.load(sys.stdin)
-    pprint.pprint(params)
 
     envname = "env" + str(params["id"])
 
-    if params['action'] == 'start':
-        start_env(params, envname)
-    elif params['action'] == 'stop':
-        stop_env(envname)
+    try:
+        status_env(envname)
+    except subprocess.CalledProcessError, e:
+        if params['action'] == 'start':
+            start_env(params, envname)
+        elif params['action'] == 'stop':
+            print ("Environment already stopped")
+    else:
+        if params['action'] == 'start':
+            print ("Environment already started")
+        elif params['action'] == 'stop':
+            stop_env(envname)
 
 
