@@ -1,6 +1,8 @@
 #!/usr/bin/env python2
+# -*- coding: utf-8 -*-
 import distutils.dir_util
 import fcntl
+import logging
 import json
 import os
 import socket
@@ -19,30 +21,31 @@ CONF_PATH = "/var/run/itseml/"
 # Port used for iptables redirection
 BASE_PORT = 8080
 
-# Operations:
-#  - list: List available environments
-#  - start: Start an environment
-#  - start-all: Start all environments
-#  - stop: Stop an environment
-#  - stop-all: Stop all environments
-#  - enable: Delete any services created previously
-#  - enable-all: Delete any services created previously
-#  - disable: Delete any services created previously
-#  - disable-all: Delete any services created previously
-#  - status: Show status for a given environment
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
 
+# create formatter
+formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
+
+# log to stderr
+stream_handler = logging.StreamHandler()
+stream_handler.setLevel(logging.DEBUG)
+stream_handler.setFormatter(formatter)
+
+logger.addHandler(stream_handler)
 
 def start_env(params, envname):
+    logging.info("Creating destination directory")
     try:
         distutils.dir_util.mkpath("/var/run/itseml/%s/mw/config" % (envname))
     except DistutilsFileError as e:
-        print ("Failed to create directory: %s" % (e))
+        logging.error("Failed to create directory: %s" % (e))
 
     generate_configuration(params, envname)
 
     _service_action('start', envname)
     _network_conf(params['id'], "add")
-    print ("Started environnment: %s" % (envname))
+    logging.info("Started environment: %s" % (envname))
 
 def _mac_to_gn_addr(hw_addr):
     gn_addr = '0000' + hw_addr.replace(':', '')
@@ -72,10 +75,10 @@ def _network_conf(envnum, action):
         cmds.reverse()
     cmds.append("ip a %s %s/30 dev ctl%d" % (action, local, envnum))
     action = action.upper()
-
     cmds.append("iptables -t nat -%s PREROUTING -p tcp --dport %d -j DNAT --to-destination %s:8080" % (action, port, remt))
     cmds.append("iptables -%s FORWARD -p tcp --dport %d -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT" % (action, port))
 
+    logging.info("Applying IP configuration")
     for cmd in cmds:
         out = subprocess.check_call(cmd, shell=True)
 
@@ -91,7 +94,7 @@ def _service_action(action, envname):
 def stop_env(envname):
     _network_conf(params['id'], "del")
     _service_action('stop', envname)
-    print ("Stopped environnment: %s" % (envname))
+    logging.info("Stopped environment: %s" % (envname))
 
 def status_env(envname):
     _service_action('is-active -q', envname)
@@ -107,7 +110,7 @@ def generate_configuration(params, envname):
     for i,_ in enumerate(src):
         copyfile(src[i], dst[i])
 
-    # Generate files from JSON
+    # Generate configuration files from JSON
     _fields = {
         'gn': 'itsnet.conf',
         'denm': 'mw/config/denservice.xml',
@@ -128,13 +131,15 @@ def generate_configuration(params, envname):
 
     for k, v in _fields.iteritems():
         if k in params:
+            logging.info("Creating configuration for %s: %s", k, v)
             _process(params[k], v)
 
-    # choirconf.xml
+    # Generate choirconf.xml
     tpl_params = {
         "station_id": params.get("id"),
         "station_type": 5,
     }
+    logging.info("Creating configuration for mw-server: choirconf.xml")
     _process(tpl_params, "mw/choirconf.xml")
 
 
@@ -143,16 +148,18 @@ if __name__ == '__main__':
 
     envname = "env" + str(params["id"])
 
+    logging.debug("Processing received JSON:\n%s", pprint.pformat(params))
+
     try:
         status_env(envname)
     except subprocess.CalledProcessError, e:
         if params['action'] == 'start':
             start_env(params, envname)
         elif params['action'] == 'stop':
-            print ("Environment already stopped")
+            logging.info("Environment %s already stopped", envname)
     else:
         if params['action'] == 'start':
-            print ("Environment already started")
+            logging.info("Environment %s already started", envname)
         elif params['action'] == 'stop':
             stop_env(envname)
 
