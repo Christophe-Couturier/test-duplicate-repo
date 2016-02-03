@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+	<service start="false" instance="0">VdpService</service>
+	<config>
+		<!-- Message Id for choir protocol -->
+		<pubsub  canappid="80" incanjson="100"  positionappid="81" inpositionjson="200" />
+		<cache VDPCacheId="0" />
+		<!-- specific configuration for vehicule diagnostic -->
+		<vehicle type="" />
+
+		<canfields time="false" brake="true" gear="true" wipers="true"
+			door_1="true" door_2="true" door_3="true" door_4="true" door_5="true"
+			door_6="true" door_7="true" door_8="true" abs="true" esp="true"
+			fog_lights="true" head_lights="true" warning_lights="true" lat_accel="true"
+			exttemp="true" gas="true" mileage="true" speed="false" yaw="true"
+			rlw_speed="true" rrw_speed="true" steering="true" />
+		<!-- voir http://www.catb.org/gpsd/gpsd_json.html -->
+		<gpsfields class="true" device="true" mode="true" time="true"
+			ept="true" lat="true" lon="true" alt="true" epx="true" epy="true"
+			epv="true" track="true" speed="true" climb="true" epd="true" eps="true"
+			epc="true" />
+
+
+	</config>
+</configuration>

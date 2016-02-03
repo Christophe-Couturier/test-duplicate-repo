@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+	<service start="true" instance="0">RhsService</service>
+	<config>
+		<!-- MessageId for DENM Triggering message -->
+		<pubsub triggerdenm="25"/>
+
+		<!--
+			shape : Shape of the destination are. circle(0), rectangle(1), ellipse(2)
+			destA : Distance between the origin and a point A, in meters
+			destB : Distance between the origin and a point B, in meters
+			angle : The angle of the rotation of the cartesian plane
+			trafficClass : The traffic class of the communication
+		-->
+		<destinationArea shape="0" destA = "10000" destB="10000" angle="0" trafficClass="0"/>
+
+		<!--
+        	type : RouteGlissante, VehiculeImmobilise, AccidentNonSecurise, VisibiliteReduite, FeinageUrgence
+        	relevanceDistance : At which distance the message is relevant lessThan50m(0) , lessThan100m(1),
+        						lessThan200m(2), lessThan500m(3),lessThan1000m(4), lessThan5km(5),
+        						lessThan10km(6), over10km(7)
+        	validityDuration : validity duration of the message in seconds
+        	transmissionInterval : interval between two transmission of a DENM in milliseconds
+        	informationQuality : Voir la documentation SCOOP annexe 2 paragraphe 3.2.5
+   		 -->
+
+		<RouteGlissante
+			relevanceDistance="4"
+			transmissionInterval="1000"
+			validityDuration="3"
+			informationQuality="0"
+		/>
+
+		<VehiculeImmobilise
+			relevanceDistance="4"
+			transmissionInterval="1000"
+			validityDuration="1200"
+			informationQuality="0"
+		/>
+
+		<AccidentNonSecurise
+			relevanceDistance="4"
+			transmissionInterval="1000"
+			validityDuration="1200"
+			informationQuality="0"
+		/>
+
+		<VisibiliteReduite
+			relevanceDistance="4"
+			transmissionInterval="1000"
+			validityDuration="3"
+			informationQuality="0"
+		/>
+
+		<FeinageUrgence
+			relevanceDistance="4"
+			transmissionInterval="1000"
+			validityDuration="3"
+			informationQuality="0"
+		/>
+	</config>
+</configuration>

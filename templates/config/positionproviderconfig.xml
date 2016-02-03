@@ -7,7 +7,7 @@
 		<!-- position provider static/gpsd  time provider system/gpd-->
 		<provider position="static" time="system"/>
 		<!-- specific configuration for position provider -->
-		<staticposition latitude="48.837586" longitude="2.101369" refreshintervalms="1000" />
+		<staticposition latitude="$lat" longitude="$lon" refreshintervalms="1000" />
 		<gpsd address="localhost" port="2947" />
 	</config>
 </configuration>
