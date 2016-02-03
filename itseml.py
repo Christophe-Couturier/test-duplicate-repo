@@ -66,7 +66,7 @@ def _network_conf(envnum, action):
 
     local = str(netaddr.IPAddress(net.first+1))
     remt = str(netaddr.IPAddress(net.last-1))
-    port = BASE_PORT + envnum - 1
+    port = BASE_PORT + envnum
 
     cmds = []
     cmds.append("ip netns exec env%d ip a %s %s/30 dev eth1" % (envnum, action, remt))
