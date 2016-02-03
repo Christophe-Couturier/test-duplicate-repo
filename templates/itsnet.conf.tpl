@@ -3,7 +3,7 @@ DebugLevel = 1
 SAPSocket = $SAPSocket
 gn {
 	config {
-		local_gn_addr = "$gn_addr"
+		local_gn_addr = "0:0:0:1"
 		local_addr_conf_method = 0
 		protocol_version = 0
 		station_type = 0

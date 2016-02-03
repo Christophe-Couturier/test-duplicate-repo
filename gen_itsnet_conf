@@ -10,9 +10,4 @@ if [ ${ADDR} = 0000 ]; then
        awk '{print $1;}' | sed -e 's/.\{4\}/&:/g' -e 's/:$//')
 fi
 
-mkdir -p /var/run/itseml/${NETNS}
-
-cp /usr/share/doc/cargeo6/itsnet.conf /var/run/itseml/${NETNS}/itsnet.conf
-sed -i -e "s,^#SAPSocket.*,SAPSocket = /var/run/itseml/${NETNS}/GN_SAP.sock," \
-       -e "s/0:0:0:1/$ADDR/" \
-       /var/run/itseml/${NETNS}/itsnet.conf
+perl -pi -e "s/0:0:0:1/$ADDR/" /var/run/itseml/${NETNS}/itsnet.conf

@@ -34,6 +34,7 @@ def start_env(params, envname):
     except DistutilsFileError as e:
         print ("Failed to create directory: %s" % (e))
 
+    setup_itsnet(params, envname)
 
     _service_action('start', envname)
     print ("Started environnment: %s" % (envname))
@@ -62,19 +63,12 @@ def status_env(envname):
 
 def setup_itsnet(params, envname):
     itsnet_params = {
-        "gn_addr": "%s" % (_mac_to_gn_addr(mac)),
         "SAPSocket": "/var/run/itseml/%s/GN_SAP.sock" % (envname),
-        "geobc_fwd_alg": "0",
+        "geobc_fwd_alg": "%s" % (params.get("geobc_fwd_alg", 0)),
     }
 
-    try:
-	distutils.dir_util.mkpath("/var/run/itseml/%s/" % (envname))
-	#distutils.dir_util.mkpath("/var/lib/itseml/%s/" % (envname))
-    except DistutilsFileError as e:
-        print ("Failed to create directory: %s" % (e))
-
     with open(os.path.join(TMPL_PATH, 'itsnet.conf.tpl'), 'r') as f, \
-        open("/var/lib/itseml/%s/itsnet.conf" % (envname), 'w') as dst:
+        open("/var/run/itseml/%s/itsnet.conf" % (envname), 'w') as dst:
         gn_tpl = Template(f.read())
         dst.write(gn_tpl.substitute(itsnet_params))
 
@@ -95,8 +89,14 @@ if __name__ == '__main__':
                    help='environment name')
 
 
+if __name__ == '__main__':
+    params = json.load(sys.stdin)
 
+    envname = "env" + str(params["id"])
 
-    _ops[args.operation](args.env)
+    if params['action'] == 'start':
+        start_env(params, envname)
+    elif params['action'] == 'stop':
+        stop_env(envname)
 
 
