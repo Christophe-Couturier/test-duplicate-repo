@@ -1,14 +1,11 @@
 #!/usr/bin/env python2
-import argparse
-import os
-import errno
 import distutils.dir_util
-import glob
-import subprocess
-import struct
-import socket
 import fcntl
-import yaml
+import json
+import os
+import socket
+import struct
+import subprocess
 import sys
 
 from string import Template
@@ -30,11 +27,9 @@ CONF_PATH = "/var/lib/itseml/"
 #  - disable-all: Delete any services created previously
 #  - status: Show status for a given environment
 
-def list_envs():
-    for env in ENV_LIST:
-        print('\t%s' % env)
 
-def configure_itsnet(params):
+def start_env(params, envname):
+    setup_env(params, envname)
 
 def start_env(envname):
     with open(os.path.join(ENV_PATH, envname +'.yml'), 'r') as f:
@@ -71,45 +66,10 @@ def stop_env(envname):
     _service_action('stop', envname)
     print ("Stopped environnment: %s" % (envname))
 
-def enable_env(envname):
-    _service_action('enable', envname)
-
-def disable_env(envname):
-    _service_action('disable', envname)
-
 def status_env(envname):
     _service_action('status', envname)
 
-def start_all_envs():
-    for env in ENV_LIST:
-        start_env(env)
-
-def stop_all_envs():
-    for envname in ENV_LIST:
-        _service_action('stop', envname)
-
-def enable_all_env():
-    for envname in ENV_LIST:
-        _service_action('enable', envname)
-
-def disable_all_envs():
-    for envname in ENV_LIST:
-        _service_action('disable', envname)
-
-_ops = {
-    'list'        : list_envs,
-    'start'       : start_env,
-    'start-all'   : start_all_envs,
-    'stop'        : stop_env,
-    'stop-all'    : stop_all_envs,
-    'enable'      : enable_env,
-    'enable-all'  : enable_all_env,
-    'disable'     : disable_env,
-    'disable-all' : disable_all_envs,
-    'status'      : status_env,
-}
-
-def setup_itsnet(params):
+def setup_itsnet(params, envname):
     itsnet_params = {
         "gn_addr": "%s" % (_mac_to_gn_addr(mac)),
         "SAPSocket": "/var/run/itseml/%s/GN_SAP.sock" % (envname),
@@ -143,16 +103,8 @@ if __name__ == '__main__':
     parser.add_argument('env', metavar='N',
                    help='environment name')
 
-    args = parser.parse_args()
 
-    ENV_LIST = glob.glob(os.path.join(ENV_PATH, '*.yml'))
-    ENV_LIST = [os.path.basename(x).replace('.yml', '') for x in ENV_LIST]
 
-    if args.operation not in _ops:
-        print ("Invalid operation requested")
-    if args.env not in ENV_LIST:
-        print ("Invalid environment name")
-	
 
     _ops[args.operation](args.env)
 
