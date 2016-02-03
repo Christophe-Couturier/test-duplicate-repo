@@ -35,9 +35,11 @@ stream_handler.setFormatter(formatter)
 logger.addHandler(stream_handler)
 
 def start_env(params, envname):
-    logging.info("Creating destination directory")
+    directory = "/var/run/itseml/%s/mw/config" % (envname)
+    logging.info("Creating destination directory: %s", directory)
+
     try:
-        distutils.dir_util.mkpath("/var/run/itseml/%s/mw/config" % (envname))
+        distutils.dir_util.mkpath(directory)
     except DistutilsFileError as e:
         logging.error("Failed to create directory: %s" % (e))
 
