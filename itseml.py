@@ -7,12 +7,13 @@ import socket
 import struct
 import subprocess
 import sys
+import pprint
+import netaddr
 
+from shutil import copyfile
 from string import Template
 
-ENV_PATH  = "/etc/itseml/envs/"
-TMPL_PATH  = "/etc/itseml/templates/"
-ENV_LIST  = []
+TMPL_PATH  = "templates/"
 CONF_PATH = "/var/lib/itseml/"
 
 # Port used for iptables redirection
@@ -38,6 +39,7 @@ def start_env(params, envname):
         print ("Failed to create directory: %s" % (e))
 
     setup_itsnet(params, envname)
+    setup_mwserver(params, envname)
 
     _service_action('start', envname)
     _network_conf(params['id'], "add")
@@ -103,25 +105,52 @@ def setup_itsnet(params, envname):
         gn_tpl = Template(f.read())
         dst.write(gn_tpl.substitute(itsnet_params))
 
-def setup_mwserver(params):
-    pass
+def setup_mwserver(params, envname):
+    # Copy files that don't need modifications
+    filelist = ['log4j.properties', 'config/spatconfig.xml', 'config/trafficlight.xml',
+            'config/v2xconfig.xml', 'config/vehiclediagnosticconfig.xml', 'config/ldmservice.xml',
+            'config/rhsservice.xml']
 
-def setup_env(envname, params):
-    setup_itsnet(params['itsnet'])
-    setup_mwserver(params['mw-server'])
+    src = [os.path.join(TMPL_PATH, x) for x in filelist]
+    dst = [os.path.join("/var/run/itseml/%s/mw" % (envname), x) for x in filelist]
+    for i,_ in enumerate(src):
+        copyfile(src[i], dst[i])
 
-if __name__ == '__main__':
+    # choirconf
+    tpl_params = {
+        "station_id": params.get("id"),
+        "station_type": 5,
+    }
 
-    parser = argparse.ArgumentParser(description='Setup ITS emulation environnment')
-    parser.add_argument('operation', help='Operation. Must be one of: start | stop');
-    #parser.add_argument('-v', dest='verbose', action='store_true')
-    ##parser.add_argument('start', dest='_start', action='store_true')
-    parser.add_argument('env', metavar='N',
-                   help='environment name')
+    with open(os.path.join(TMPL_PATH, 'choirconf.xml'), 'r') as f, \
+        open("/var/run/itseml/%s/mw/choirconf.xml" % (envname), 'w') as dst:
+        tpl = Template(f.read())
+        dst.write(tpl.substitute(tpl_params))
+
+    # denm
+    denm_forwarding = str(params.get("denm_forwarding", "true")).lower()
+    tpl_params = {
+        "denm_forwarding": denm_forwarding,
+    }
+    with open(os.path.join(TMPL_PATH, 'config', 'denservice.xml'), 'r') as f, \
+        open("/var/run/itseml/%s/mw/config/denservice.xml" % (envname), 'w') as dst:
+        tpl = Template(f.read())
+        dst.write(tpl.substitute(tpl_params))
+
+    # position
+    tpl_params = {
+        "lat": params["position"].get("lat", "0.0"),
+        "lon": params["position"].get("lon", "0.0"),
+    }
+    with open(os.path.join(TMPL_PATH, 'config', 'positionproviderconfig.xml'), 'r') as f, \
+        open("/var/run/itseml/%s/mw/config/positionproviderconfig.xml" % (envname), 'w') as dst:
+        tpl = Template(f.read())
+        dst.write(tpl.substitute(tpl_params))
 
 
 if __name__ == '__main__':
     params = json.load(sys.stdin)
+    pprint.pprint(params)
 
     envname = "env" + str(params["id"])
 
