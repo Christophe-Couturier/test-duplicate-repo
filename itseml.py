@@ -152,9 +152,7 @@ def generate_configuration(params, envname):
     _process(tpl_params, "mw/choirconf.xml")
 
 
-if __name__ == '__main__':
-    params = json.load(sys.stdin)
-
+def process_message(params):
     envname = "env" + str(params["id"])
 
     logging.debug("Processing received JSON:\n%s", pprint.pformat(params))
@@ -173,3 +171,6 @@ if __name__ == '__main__':
             stop_env(envname)
 
 
+if __name__ == '__main__':
+    msg = json.load(sys.stdin)
+    process_message(msg)
