@@ -15,6 +15,9 @@ TMPL_PATH  = "/etc/itseml/templates/"
 ENV_LIST  = []
 CONF_PATH = "/var/lib/itseml/"
 
+# Port used for iptables redirection
+BASE_PORT = 8080
+
 # Operations:
 #  - list: List available environments
 #  - start: Start an environment
@@ -37,6 +40,7 @@ def start_env(params, envname):
     setup_itsnet(params, envname)
 
     _service_action('start', envname)
+    _network_conf(params['id'], "add")
     print ("Started environnment: %s" % (envname))
 
 def _mac_to_gn_addr(hw_addr):
@@ -48,6 +52,32 @@ def _get_if_mac(iface):
     info = fcntl.ioctl(s.fileno(), 0x8927,  struct.pack('256s', iface[:15]))
     return ':'.join(['%02x' % ord(char) for char in info[18:24]])
 
+def _network_conf(envnum, action):
+    action = "a" if action == "add" else "d"
+    network = netaddr.IPNetwork("10.1.1.0/24")
+    subnets = list(network.subnet(30))
+    net = subnets[envnum-1]
+
+    local = str(netaddr.IPAddress(net.first+1))
+    remt = str(netaddr.IPAddress(net.last-1))
+    port = BASE_PORT + envnum - 1
+
+    envname = "env" + str(envnum)
+
+    cmds = []
+    cmds.append("ip netns exec env%d ip a %s %s/30 dev eth1" % (envnum, action, remt))
+    cmds.append("ip netns exec env%d ip r %s default via %s" % (envnum, action, local))
+    if action == "d":
+        cmds.reverse()
+    cmds.append("ip a %s %s/30 dev ctl%d" % (action, local, envnum))
+    action = action.upper()
+
+    cmds.append("iptables -t nat -%s PREROUTING -p tcp --dport %d -j DNAT --to-destination %s:8080" % (action, port, remt))
+    cmds.append("iptables -%s FORWARD -p tcp --dport %d -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT" % (action, port))
+
+    for cmd in cmds:
+        out = subprocess.check_call(cmd, shell=True)
+
 
 def _service_action(action, envname):
     for svc in ['eml-netns', 'eml-itsnet', 'eml-mwtun', 'eml-mw-server', 'eml-gpsfwd',
@@ -55,6 +85,7 @@ def _service_action(action, envname):
         subprocess.check_call("systemctl %s %s@%s" % (action, svc, envname), shell=True)
 
 def stop_env(envname):
+    _network_conf(params['id'], "del")
     _service_action('stop', envname)
     print ("Stopped environnment: %s" % (envname))
 
