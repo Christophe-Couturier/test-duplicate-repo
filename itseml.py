@@ -68,19 +68,26 @@ def _network_conf(envnum, action):
     remt = str(netaddr.IPAddress(net.last-1))
     port = BASE_PORT + envnum - 1
 
-    envname = "env" + str(envnum)
-
     cmds = []
     cmds.append("ip netns exec env%d ip a %s %s/30 dev eth1" % (envnum, action, remt))
     cmds.append("ip netns exec env%d ip r %s default via %s" % (envnum, action, local))
     if action == "d":
         cmds.reverse()
     cmds.append("ip a %s %s/30 dev ctl%d" % (action, local, envnum))
-    action = action.upper()
-    cmds.append("iptables -t nat -%s PREROUTING -p tcp --dport %d -j DNAT --to-destination %s:8080" % (action, port, remt))
+    logging.info("Applying IP configuration")
+    for cmd in cmds:
+        out = subprocess.check_call(cmd, shell=True)
+
+    _iptables_rules(remt, port, action.upper())
+
+
+def _iptables_rules(addr, port, action):
+
+    cmds = []
+    cmds.append("iptables -t nat -%s PREROUTING -p tcp --dport %d -j DNAT --to-destination %s:8080" % (action, port, addr))
     cmds.append("iptables -%s FORWARD -p tcp --dport %d -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT" % (action, port))
 
-    logging.info("Applying IP configuration")
+    logging.info("Applying iptables rules")
     for cmd in cmds:
         out = subprocess.check_call(cmd, shell=True)
 
