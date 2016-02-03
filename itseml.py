@@ -29,23 +29,14 @@ CONF_PATH = "/var/lib/itseml/"
 
 
 def start_env(params, envname):
-    setup_env(params, envname)
-
-def start_env(envname):
-    with open(os.path.join(ENV_PATH, envname +'.yml'), 'r') as f:
-        conf = yaml.safe_load(f)
-
-    setup_env(envname, params)
-
     try:
-        mac = conf["itsnet"]["mac_addr"]
-    except (KeyError):
-        print ("Missing MAC addr parameter")
+        distutils.dir_util.mkpath("/var/run/itseml/%s/mw/config" % (envname))
+    except DistutilsFileError as e:
+        print ("Failed to create directory: %s" % (e))
 
 
     _service_action('start', envname)
     print ("Started environnment: %s" % (envname))
-
 
 def _mac_to_gn_addr(hw_addr):
     gn_addr = '0000' + hw_addr.replace(':', '')
