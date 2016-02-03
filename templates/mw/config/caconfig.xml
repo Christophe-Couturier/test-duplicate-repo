@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+	<service start="true" instance="0">CaService</service>
+	<config>
+		<!-- Message Id for choir protocol -->
+		<pubsub senderid="61" outcam="2" outcamjson="32"
+		        receiverid="62" incam="12" incamjson="22" />
+
+		<cache inCacheId="1" VDPCacheId="0"/>
+
+		<!-- specific configuration for cam protocol -->
+		<camparameters protocolversion="1" messageid="2"
+		                vehiclelengthconfind="0" />
+
+		<!-- Temporary values for Vehicle configuration -->
+		<vehicleinfo
+			vehiclelengthval="$vehiclelength"
+			vehiclewidth="$vehiclewidth"
+			exteriorlights="$exteriorlights"
+			vehiclerole="$vehiclerole"
+			embarkationstatus="$embarcationstatus"
+			specialtransportlightbar = "$specialtransportlightbar"
+			specialtransporttype="$specialtransporttype"
+			dangerousgoodsbasic="$dangerousgoodsbasic"
+			roadworkslightbar="$roadworkslightbar"
+			rescuelightbar="$rescuelightbar"
+			emergencylightbar="$emergencylightbar"
+			safetycarlightbar="$safetycarlightbar"
+		/>
+	</config>
+</configuration>

@@ -13,8 +13,8 @@ import netaddr
 from shutil import copyfile
 from string import Template
 
-TMPL_PATH  = "templates/"
-CONF_PATH = "/var/lib/itseml/"
+TMPL_PATH = "templates/"
+CONF_PATH = "/var/run/itseml/"
 
 # Port used for iptables redirection
 BASE_PORT = 8080
@@ -38,8 +38,7 @@ def start_env(params, envname):
     except DistutilsFileError as e:
         print ("Failed to create directory: %s" % (e))
 
-    setup_itsnet(params, envname)
-    setup_mwserver(params, envname)
+    generate_configuration(params, envname)
 
     _service_action('start', envname)
     _network_conf(params['id'], "add")
@@ -94,58 +93,46 @@ def stop_env(envname):
 def status_env(envname):
     _service_action('status', envname)
 
-def setup_itsnet(params, envname):
-    itsnet_params = {
-        "SAPSocket": "/var/run/itseml/%s/GN_SAP.sock" % (envname),
-        "geobc_fwd_alg": "%s" % (params.get("geobc_fwd_alg", 0)),
-    }
-
-    with open(os.path.join(TMPL_PATH, 'itsnet.conf.tpl'), 'r') as f, \
-        open("/var/run/itseml/%s/itsnet.conf" % (envname), 'w') as dst:
-        gn_tpl = Template(f.read())
-        dst.write(gn_tpl.substitute(itsnet_params))
-
-def setup_mwserver(params, envname):
+def generate_configuration(params, envname):
     # Copy files that don't need modifications
     filelist = ['log4j.properties', 'config/spatconfig.xml', 'config/trafficlight.xml',
             'config/v2xconfig.xml', 'config/vehiclediagnosticconfig.xml', 'config/ldmservice.xml',
             'config/rhsservice.xml']
 
-    src = [os.path.join(TMPL_PATH, x) for x in filelist]
+    src = [os.path.join(TMPL_PATH, "mw", x) for x in filelist]
     dst = [os.path.join("/var/run/itseml/%s/mw" % (envname), x) for x in filelist]
     for i,_ in enumerate(src):
         copyfile(src[i], dst[i])
 
-    # choirconf
+    # Generate files from JSON
+    _fields = {
+        'gn': 'itsnet.conf',
+        'denm': 'mw/config/denservice.xml',
+        'position': 'mw/config/positionproviderconfig.xml',
+        'cam': 'mw/config/caconfig.xml',
+    }
+
+    def _process(field, filename):
+        # Replace True with "true" and False with "false"
+        for k, v in field.iteritems():
+            if type(field[k]) == bool:
+                field[k] = str(v).lower()
+
+        with open(os.path.join(TMPL_PATH, filename), 'r') as f, \
+            open(os.path.join(CONF_PATH, envname, filename), 'w') as dst:
+            tpl = Template(f.read())
+            dst.write(tpl.substitute(field))
+
+    for k, v in _fields.iteritems():
+        if k in params:
+            _process(params[k], v)
+
+    # choirconf.xml
     tpl_params = {
         "station_id": params.get("id"),
         "station_type": 5,
     }
-
-    with open(os.path.join(TMPL_PATH, 'choirconf.xml'), 'r') as f, \
-        open("/var/run/itseml/%s/mw/choirconf.xml" % (envname), 'w') as dst:
-        tpl = Template(f.read())
-        dst.write(tpl.substitute(tpl_params))
-
-    # denm
-    denm_forwarding = str(params.get("denm_forwarding", "true")).lower()
-    tpl_params = {
-        "denm_forwarding": denm_forwarding,
-    }
-    with open(os.path.join(TMPL_PATH, 'config', 'denservice.xml'), 'r') as f, \
-        open("/var/run/itseml/%s/mw/config/denservice.xml" % (envname), 'w') as dst:
-        tpl = Template(f.read())
-        dst.write(tpl.substitute(tpl_params))
-
-    # position
-    tpl_params = {
-        "lat": params["position"].get("lat", "0.0"),
-        "lon": params["position"].get("lon", "0.0"),
-    }
-    with open(os.path.join(TMPL_PATH, 'config', 'positionproviderconfig.xml'), 'r') as f, \
-        open("/var/run/itseml/%s/mw/config/positionproviderconfig.xml" % (envname), 'w') as dst:
-        tpl = Template(f.read())
-        dst.write(tpl.substitute(tpl_params))
+    _process(tpl_params, "mw/choirconf.xml")
 
 
 if __name__ == '__main__':

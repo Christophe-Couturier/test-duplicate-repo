@@ -7,7 +7,7 @@
 		        receiverid="92" indenm="15" injsondenm="35" outjsondenm="45" answerdenm="55"/>
 
 		<!-- Enable the DENM forwarding service -->
-		<forwarding value="$denm_forwarding"/>
+		<forwarding value="$forwarding"/>
 
 		<!-- Cache for DENM -->
 		<cache originating="2" reciving="21" forward="22"/>
