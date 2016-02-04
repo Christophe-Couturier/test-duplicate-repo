@@ -5,7 +5,6 @@ Requires=eml-netns@%i.service
 
 [Service]
 Type=simple
-#ExecStartPre=/usr/bin/configure_mac %i
 ExecStartPre=/usr/bin/gen_itsnet_conf %i
 ExecStart=/sbin/ip netns exec %i /usr/bin/itsnet -c /var/run/itseml/%i/itsnet.conf -d
 
