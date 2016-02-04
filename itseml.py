@@ -11,6 +11,7 @@ import struct
 import subprocess
 import sys
 import pprint
+import random
 import netaddr
 
 from shutil import copyfile
@@ -146,7 +147,7 @@ def generate_configuration(params, envname):
 
     # Generate choirconf.xml
     tpl_params = {
-        "station_id": params.get("id"),
+        "station_id": params.get("stationid"),
         "station_type": 5,
     }
     logging.info("Creating configuration for mw-server: choirconf.xml")
@@ -166,7 +167,9 @@ def _dict_update(source, overrides):
     return source
 
 def process_message(params):
+    rng = random.SystemRandom()
     defaults = {
+        "stationid": rng.randint(1,65535),
         "gn": {
             "geobc_fwd_alg": 0,
         },
