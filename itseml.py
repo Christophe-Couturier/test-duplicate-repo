@@ -171,6 +171,7 @@ def process_message(params):
     defaults = {
         "stationid": rng.randint(1,65535),
         "gn": {
+            "gn_addr": "0:0:0:1",
             "geobc_fwd_alg": 0,
         },
         "denm": {
