@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <configuration>
-	<service start="true" instance="0">CaService</service>
+	<service start="false" instance="0">CaService</service>
 	<config>
 		<!-- Message Id for choir protocol -->
 		<pubsub senderid="61" outcam="2" outcamjson="32"
