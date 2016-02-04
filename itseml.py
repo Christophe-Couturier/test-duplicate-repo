@@ -80,20 +80,6 @@ def _network_conf(envnum, action):
     for cmd in cmds:
         out = subprocess.check_call(cmd, shell=True)
 
-    _iptables_rules(remt, port, action.upper())
-
-
-def _iptables_rules(addr, port, action):
-
-    cmds = []
-    cmds.append("iptables -t nat -%s PREROUTING -p tcp --dport %d -j DNAT --to-destination %s:8080" % (action, port, addr))
-    cmds.append("iptables -%s FORWARD -p tcp --dport %d -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT" % (action, port))
-
-    logging.info("Applying iptables rules")
-    for cmd in cmds:
-        out = subprocess.check_call(cmd, shell=True)
-
-
 def _service_action(action, envname):
     svcs = ['eml-netns', 'eml-itsnet', 'eml-mwtun', 'eml-mw-server',
 		'eml-gpsfwd', 'eml-gpsd', 'eml-gpspipe']
