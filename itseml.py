@@ -67,7 +67,7 @@ def _network_conf(envnum, action):
     net = subnets[envnum-1]
 
     local = str(netaddr.IPAddress(net.first+1))
-    remt = str(netaddr.IPAddress(net.last-1))
+    remt = str(netaddr.IPAddress(net.first+2))
     port = BASE_PORT + envnum
 
     cmds = []
