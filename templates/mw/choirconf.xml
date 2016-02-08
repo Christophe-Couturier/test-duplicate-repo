@@ -23,8 +23,11 @@
     </services>
 
     <websocket
-        enabled    = "true"
-        port       = "8080" />
+        enabled             = "true"
+        port                            = "8080"
+        root_path           = "/"
+        min_dynamic_id      = "65535"
+        max_dynamic_id      = "2147483647"/>
 
     <uppertester
         enabled             = "false"
