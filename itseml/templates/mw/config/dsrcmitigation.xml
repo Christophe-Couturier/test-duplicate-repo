@@ -4,13 +4,13 @@
 	<config>
 		<!-- VPD cache ID -->
 		<cache VDPCacheId="0"/>
-		
+
 		<!-- Distance at which the mitigation will be active or not in meters-->
 		<distance value="100"/>
-		
+
 		<!-- Application ID and CAM ID for Choir Protocol -->
 		<pubsub incam="2" applicationId="96" messageId="6"/>
-		
+
 		<!-- Indicates the numbe of station defined -->
 		<index value="1"/>
 		<!-- Defines the position of a toll station -->

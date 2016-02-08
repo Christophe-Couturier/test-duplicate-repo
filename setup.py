@@ -9,4 +9,6 @@ setup(name='itseml',
       author_email='marios.makassikis@yogoko.fr',
       url='https://www.yogoko.fr',
       packages=['itseml'],
+      package_data={'itseml': ['templates/*', 'templates/mw/*',
+                               'templates/mw/config/*']},
      )

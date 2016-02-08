@@ -15,7 +15,7 @@
 		<destinationArea shape="0" destA = "10000" destB="10000" angle="0" trafficClass="0"/>
 
 		<!--
-        	type : RouteGlissante, VehiculeImmobilise, AccidentNonSecurise, VisibiliteReduite, FeinageUrgence
+		type : RouteGlissante, VehiculeImmobilise, AccidentNonSecurise, VisibiliteReduite, FeinageUrgence
         	relevanceDistance : At which distance the message is relevant lessThan50m(0) , lessThan100m(1),
         						lessThan200m(2), lessThan500m(3),lessThan1000m(4), lessThan5km(5),
         						lessThan10km(6), over10km(7)
