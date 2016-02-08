@@ -52,6 +52,7 @@ def start_env(params, envname):
     _service_action('start', envname)
     _network_conf(params['id'])
     logging.info("Started environment: %s" % (envname))
+    return "200 OK"
 
 def _mac_to_gn_addr(hw_addr):
     gn_addr = '0000' + hw_addr.replace(':', '')
@@ -92,6 +93,7 @@ def _service_action(action, envname):
 def stop_env(envname, envid):
     _service_action('stop', envname)
     logging.info("Stopped environment: %s" % (envname))
+    return "200 OK"
 
 def status_env(envname):
     _service_action('is-active -q', envname)
@@ -174,18 +176,21 @@ def process_message(params):
 
     logging.debug("Processing received JSON:\n%s", pprint.pformat(defaults))
 
+    response = "304 Not modified"
+
     try:
         status_env(envname)
     except subprocess.CalledProcessError, e:
         if defaults['action'] == 'start':
-            start_env(defaults, envname)
+            response = start_env(defaults, envname)
         elif defaults['action'] == 'stop':
             logging.info("Environment %s already stopped", envname)
     else:
         if defaults['action'] == 'start':
             logging.info("Environment %s already started", envname)
         elif defaults['action'] == 'stop':
-            stop_env(envname, defaults["id"])
+            response = stop_env(envname, defaults["id"])
+    return response
 
 if __name__ == '__main__':
     msg = json.load(sys.stdin)
