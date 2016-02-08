@@ -4,7 +4,8 @@
 	<config>
 		<!-- Message Id for choir protocol -->
 		<pubsub senderid="61" outcam="2" outcamjson="32"
-		        receiverid="62" incam="12" incamjson="22" />
+		        receiverid="62" incam="12" incamjson="22"
+		        mitigation="6" />
 
 		<cache inCacheId="1" VDPCacheId="0"/>
 
@@ -22,6 +23,10 @@
 			specialtransportlightbar = "$specialtransportlightbar"
 			specialtransporttype="$specialtransporttype"
 			dangerousgoodsbasic="$dangerousgoodsbasic"
+			roadworkslightbar="$roadworkslightbar"
+			rescuelightbar="$rescuelightbar"
+			emergencylightbar="$emergencylightbar"
+			safetycarlightbar="$safetycarlightbar"
 			roadworkslightbar="$roadworkslightbar"
 			rescuelightbar="$rescuelightbar"
 			emergencylightbar="$emergencylightbar"

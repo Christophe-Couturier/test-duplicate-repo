@@ -16,6 +16,6 @@
 		<autoupdate enabled="$autoupdate"/>
 
 		<!-- Cache for DENM -->
-		<cache originating="2" reciving="21" forward="22"/>
+		<cache originating="2" receiving="21" forward="22"/>
 	</config>
 </configuration>
