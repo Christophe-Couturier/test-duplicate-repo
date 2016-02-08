@@ -81,11 +81,13 @@ def _network_conf(envnum):
 
 def _service_action(action, envname):
     svcs = ['eml-netns', 'eml-itsnet', 'eml-mwtun', 'eml-mw-server',
-		'eml-gpsfwd', 'eml-gpsd', 'eml-gpspipe']
+            'eml-gpsfwd', 'eml-gpsd', 'eml-gpspipe']
     if "is-active" in action:
         svcs.remove('eml-gpspipe')
-    for svc in svcs:
-        subprocess.check_call("systemctl %s %s@%s" % (action, svc, envname), shell=True)
+
+    services = ' '.join([x + '@%s' % (envname) for x in svcs])
+
+    subprocess.check_call("systemctl %s %s" % (action, services), shell=True)
 
 def stop_env(envname, envid):
     _service_action('stop', envname)
