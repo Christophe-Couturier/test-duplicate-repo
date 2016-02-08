@@ -2,9 +2,7 @@
 
 NETNS="$1"
 
-ADDR=$(awk -F\" '/local_gn_addr/ {print $2}' /var/run/itseml/env1/itsnet.conf)
-
-echo $ADDR
+ADDR=$(awk -F\" '/local_gn_addr/ {print $2}' /var/run/itseml/${NETNS}/itsnet.conf)
 
 if [ ${ADDR} = "0:0:0:1" ]; then
     ADDR=$(ip netns exec ${NETNS} ip -o l show eth0 | \
