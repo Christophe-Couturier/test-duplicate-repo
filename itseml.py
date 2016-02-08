@@ -48,7 +48,7 @@ def start_env(params, envname):
     generate_configuration(params, envname)
 
     _service_action('start', envname)
-    _network_conf(params['id'], "add")
+    _network_conf(params['id'])
     logging.info("Started environment: %s" % (envname))
 
 def _mac_to_gn_addr(hw_addr):
@@ -60,8 +60,7 @@ def _get_if_mac(iface):
     info = fcntl.ioctl(s.fileno(), 0x8927,  struct.pack('256s', iface[:15]))
     return ':'.join(['%02x' % ord(char) for char in info[18:24]])
 
-def _network_conf(envnum, action):
-    action = "a" if action == "add" else "d"
+def _network_conf(envnum):
     network = netaddr.IPNetwork("10.1.1.0/24")
     subnets = list(network.subnet(30))
     net = subnets[envnum-1]
@@ -71,11 +70,9 @@ def _network_conf(envnum, action):
     port = BASE_PORT + envnum
 
     cmds = []
-    cmds.append("ip netns exec env%d ip a %s %s/30 dev eth1" % (envnum, action, remt))
-    cmds.append("ip netns exec env%d ip r %s default via %s" % (envnum, action, local))
-    if action == "d":
-        cmds.reverse()
-    cmds.append("ip a %s %s/30 dev ctl%d" % (action, local, envnum))
+    cmds.append("ip netns exec env%d ip a a %s/30 dev eth1" % (envnum, remt))
+    cmds.append("ip netns exec env%d ip r a default via %s" % (envnum, local))
+    cmds.append("ip a a %s/30 dev ctl%d" % (local, envnum))
     logging.info("Applying IP configuration")
     for cmd in cmds:
         out = subprocess.check_call(cmd, shell=True)
@@ -89,7 +86,6 @@ def _service_action(action, envname):
         subprocess.check_call("systemctl %s %s@%s" % (action, svc, envname), shell=True)
 
 def stop_env(envname, envid):
-    _network_conf(envid, "del")
     _service_action('stop', envname)
     logging.info("Stopped environment: %s" % (envname))
 
