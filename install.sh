@@ -22,9 +22,13 @@ install -o root -g root -m 755 -D setup_netns \
 install -o root -g root -m 755 -D gen_itsnet_conf \
 				${DESTDIR}/usr/bin/gen_itsnet_conf
 # Main script
-install -o root -g root -m 755 -D itseml.py \
-				${DESTDIR}/usr/bin/itseml
+python setup.py install --prefix=${DESTDIR}/usr
+
+# Convenient symlink when we want to feed data from stdin
+ln -s ${DESTDIR}/usr/lib/python2.7/site-packages/itseml/itseml.py ${DESTDIR}/usr/bin/itseml
+
 sed -i ${DESTDIR}/usr/bin/itseml -e "s,^TMPL_PATH = .*,TMPL_PATH = \"${TMPL_DIR}/templates\","
+
 # WebSocket frontend
 install -o root -g root -m 755 -D ws.py \
 				${DESTDIR}/usr/bin/ws-itseml
