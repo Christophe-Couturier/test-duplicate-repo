@@ -19,6 +19,8 @@ from string import Template
 
 TMPL_PATH = "templates/"
 CONF_PATH = "/var/run/itseml/"
+IP_NETWORK= "10.1.1.0/24"
+SUBNET_PLEN = 30
 
 # Port used for iptables redirection
 BASE_PORT = 8080
@@ -61,8 +63,8 @@ def _get_if_mac(iface):
     return ':'.join(['%02x' % ord(char) for char in info[18:24]])
 
 def _network_conf(envnum):
-    network = netaddr.IPNetwork("10.1.1.0/24")
-    subnets = list(network.subnet(30))
+    network = netaddr.IPNetwork(IP_NETWORK)
+    subnets = list(network.subnet(SUBNET_PLEN))
     net = subnets[envnum-1]
 
     local = str(netaddr.IPAddress(net.first+1))
@@ -70,9 +72,9 @@ def _network_conf(envnum):
     port = BASE_PORT + envnum
 
     cmds = []
-    cmds.append("ip netns exec env%d ip a a %s/30 dev eth1" % (envnum, remt))
+    cmds.append("ip netns exec env%d ip a a %s/%d dev eth1" % (envnum, remt, SUBNET_PLEN))
     cmds.append("ip netns exec env%d ip r a default via %s" % (envnum, local))
-    cmds.append("ip a a %s/30 dev ctl%d" % (local, envnum))
+    cmds.append("ip a a %s/%d dev ctl%d" % (local, SUBNET_PLEN, envnum))
     logging.info("Applying IP configuration")
     for cmd in cmds:
         out = subprocess.check_call(cmd, shell=True)
