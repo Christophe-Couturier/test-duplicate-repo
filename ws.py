@@ -12,6 +12,6 @@ class ItsApplication(WebSocketApplication):
         self.ws.send(response)
 
 WebSocketServer(
-    ('', itseml.BASE_PORT),
+    ('', 8080),
     Resource({'/': ItsApplication})
 ).serve_forever()

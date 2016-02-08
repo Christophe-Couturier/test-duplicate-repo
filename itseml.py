@@ -22,9 +22,6 @@ CONF_PATH = "/var/run/itseml/"
 IP_NETWORK= "10.1.1.0/24"
 SUBNET_PLEN = 30
 
-# Port used for iptables redirection
-BASE_PORT = 8080
-
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
@@ -70,7 +67,6 @@ def _network_conf(envnum):
 
     local = str(netaddr.IPAddress(net.first+1))
     remt = str(netaddr.IPAddress(net.first+2))
-    port = BASE_PORT + envnum
 
     cmds = []
     cmds.append("ip netns exec env%d ip a a %s/%d dev eth1" % (envnum, remt, SUBNET_PLEN))
