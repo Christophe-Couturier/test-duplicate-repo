@@ -8,4 +8,5 @@ Standards-Version: 3.9.1
 Package: python-itseml
 Architecture: all
 Depends: ${misc:Depends}, ${python:Depends}, python-netaddr, python-gevent-websocket
+Recommends: nginx-extras
 Description: ITS emulator helper
