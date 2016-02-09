@@ -1,12 +1,86 @@
-The goal is to setup a ITS station emulator.
+1. Introduction
 
-To achieve this, we run multiple instances of an ITS stack, each in a
-different network namespace.
+itseml is a Python module that simplifies the setup of an emulated ITS station
+by setting up a network namespace, and starting the various components as
+services after the configuration for each component has been applied.
 
+2. Usage
 
+Starting/stopping stations happens dynamically. Specifically, the ws-itseml
+and cli-itseml expect to receive an appropriately formatted JSON over
+WebSockets and stdin respectively.
 
-An ITS stack is currenctly defined as:
+A sample JSON to start a station:
+{
+  "action": "start",
+  "id": 1,               # Must be unique. It is used to identify the netns
+  "stationid": 1234      # StationID used in the mw-server configuration.
+  "gn": {
+     "gn_addr": "0000:aabb:ccdd:eeff" # GeoNetworking Address
+     "geobc_fwd_alg": 0  # Set to 4 to disable GeoBroadcast forwarding
+  },
+  "denm": {
+     "forwarding": true  # Set to false to disable DENM forwarding
+     "forceactionid": false
+     "autoupdate": false
+  },
+  "position": {          # Define static position of the station
+     "lat": "48.837590",
+     "lon": "2.101363"
+  }
+}
 
+The 'gn', 'stationid', and 'denm' objets are optional.
+If 'gn' is not set, a random GN address is used, and the default GeoBC
+forwarding algorithm is used.
+If 'stationid' is not set, a random ID is generated for the station.
+If 'denm' is not set, the values displayed above are used.
+
+To stop the station:
+{
+  "action": "stop",
+  "id": 1
+}
+
+Any additional fields will be ignored.
+
+cli-itseml is provided as a testing aid. The usage is: cli-itseml < file.json
+ws-itseml listens on port 8080, although in practice it sits behind a proxy.
+
+The provided nginx configuration (doc/sample.nginx.conf) is set to proxy
+two locations:
+ - /ctl
+ - /env/<envid>/pubsub/pub/<msgid>/<appid>
+
+The first proxies requests to ws-itseml.
+The second is used to communication with the middleware WebSocket API of each
+station. To achieve this, nginx must be compiled with an embedded Lua
+interpreter (on debian, use the nginx-extras package).
+
+3. Installation
+
+First, build the deb package with:
+        make
+
+The package will install:
+ - the python module
+ - the cli-itseml and ws-itseml frontends (in /usr/bin)
+ - the required systemd unit files (in /lib/systemd/system)
+ - some documentation in /usr/share/doc/itseml/
+
+For a fully functional setup, you need to:
+ - configure the v2xbr bridge (see below)
+ - install and configure nginx:
+    * apt-get install nginx-extras # We need Lua support
+    * cp /usr/share/doc/itseml/sample.nginx.conf /etc/nginx/sites-available
+    * ln -sf /etc/nginx/sites-available/sample.nginx.conf /etc/nginx/sites-enabled/default
+
+The last command will only overwrite the symlink; the default file is left
+untouched. Adjust if necessary.
+
+4. Internals
+
+An ITS stack is currently defined as:
  - itsnet
  - mwtun
  - mw-server
@@ -19,20 +93,61 @@ For each instance, two veth pairs are created:
  - vtxX <-> veth0
  - ctlX <-> ctl0
 
-The different vtxX devices are bridged together.
-
+The different vtxX devices are bridged together, in a bridge called v2xbr.
 
 There are various components/configurations needed to achieve a workable
 setup:
- - bridge configuration: done in /etc/network/interfaces
- - netns setup: done via a systemd unit.
- - itsnet: is started via systemd unit (w/ ExecStart=/sbin/ip netns exec %i itsnet...)
- - mwtun: is started via systemd unit (w/ ExecStart=/sbin/ip netns exec %i mwtun...)
- - gps: started via systemd unit (w/ ExecStart=/sbin/ip netns exec %i gpsfake...)
-   Using gpsd to connect to another gpsd device requires setting up IP routing.
 
- - mw-server: is started via systemd unit (w/ ExecStart=/sbin/ip netns exec %i mw-server...)
+ - bridge:
+  On generic Linux systems:
+        ip link add v2xbr type bridge # or "brctl addbr v2xbr"
+        ip link set v2xbr up
 
-Configuration of itsnet
- - Copy the file installed by the cargeo6 package in /usr/share/doc
- - Adjust parameters
+  On Debian-like systems, the appropriate stanza for /etc/network/interfaces
+is:
+        auto v2xbr
+        iface v2xbr inet manual
+            bridge_ports none
+            bridge_fd 0
+            bridge_maxwait 0
+            bridge_stp off
+
+ - netns:
+        The network namespace is setup via the appropriate script (installed
+  as /usr/bin/setup_netns). The script is called by the eml-netns@.service unit.
+
+ - itsnet:
+        The GeoNetworking daemon is started by the eml-itsnet@.service unit.
+
+ - mwtun:
+        Interface betwen itsnet and mw-server. Started by the
+eml-mwtun@service unit.
+
+ - gps:
+        The gpsd daemon fetches the position from the middleware. Since the
+  middleware does not serve data directly over TCP, a proxy is used. The
+  relevant units are:
+           * eml-gpsd@.service
+           * eml-gpsfwd@.service
+           * eml-gpspipe@.service
+
+        The eml-gpspipe service is simply a gpspipe process that runs for 3
+  seconds and then quits before being restarted again by systemd. It is not
+  needed per se but it helps mitigate a race condition:
+          - gpsd is started
+          - itsnet is started, attempts to connect to gpsd
+          - upon receiving the connection, gpsd "activates" the upstream, i.e.
+            the connection to the proxy.
+          - the proxy isn't initialized yet, so gpsd fails.
+
+        At this point, gpsd keeps the client connections open, but does not
+  retry the upstream. In other words, itsnet is connected but does not receive
+  any data.  Attempts to reconnect only happen when a new client connects,
+  which is the reason why the gpspipe service exists.
+
+ - mw-server:
+        The middleware server is started the eml-mw-server@.service unit.
+
+ - ws-itseml:
+        A simple Python wrapper using gevent-websocket to convert received
+  JSON data to a dict, and feed it to the itseml module.
