@@ -6,6 +6,7 @@ import fcntl
 import logging
 import json
 import os
+import os.path
 import socket
 import struct
 import subprocess
@@ -17,7 +18,7 @@ import netaddr
 from shutil import copyfile
 from string import Template
 
-TMPL_PATH = "templates/"
+TMPL_PATH = os.path.join(os.path.dirname(__file__), "templates")
 CONF_PATH = "/var/run/itseml/"
 IP_NETWORK= "10.1.1.0/24"
 SUBNET_PLEN = 30
