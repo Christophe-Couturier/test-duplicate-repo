@@ -4,7 +4,6 @@ import collections
 import distutils.dir_util
 import fcntl
 import logging
-import json
 import os
 import os.path
 import socket
@@ -188,7 +187,3 @@ def process_message(params):
         elif defaults['action'] == 'stop':
             response = stop_env(envname, defaults["id"])
     return response
-
-if __name__ == '__main__':
-    msg = json.load(sys.stdin)
-    process_message(msg)
