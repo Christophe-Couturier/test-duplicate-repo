@@ -1,0 +1,11 @@
+Source: itseml
+Maintainer: Marios Makassikis <marios.makassikis@yogoko.fr>
+Section: python
+Priority: optional
+Build-Depends: python-all (>= 2.6.6-3), debhelper (>= 9)
+Standards-Version: 3.9.1
+
+Package: python-itseml
+Architecture: all
+Depends: ${misc:Depends}, ${python:Depends}, python-netaddr, python-gevent-websocket
+Description: ITS emulator helper
