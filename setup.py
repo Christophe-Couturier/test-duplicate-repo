@@ -11,4 +11,16 @@ setup(name='itseml',
       packages=['itseml'],
       package_data={'itseml': ['templates/*', 'templates/mw/*',
                                'templates/mw/config/*']},
+      scripts=['bin/gen_itsnet_conf', 'bin/setup_netns', 'bin/ws-itseml', 'bin/cli-itseml'],
+      data_files=[('/usr/share/doc/itseml', ['README', 'sample.nginx.conf']),
+                  ('/lib/systemd/system', ['service_files/eml-netns@.service',
+                                           'service_files/eml-gpsd@.service',
+                                           'service_files/eml-gpsfwd@.service',
+                                           'service_files/eml-gpspipe@.service',
+                                           'service_files/eml-itsnet@.service',
+                                           'service_files/eml-mw-server@.service',
+                                           'service_files/eml-mwtun@.service',
+                                           'service_files/eml-netns@.service',
+                                           'service_files/ws-itseml.service'])]
+
      )
