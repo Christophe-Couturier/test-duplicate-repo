@@ -19,6 +19,8 @@ start)
 	ip link set vtx${ID} up master ${BRIDGE}
 	ip link set ctl${ID} up
 
+	ip netns exec ${NETNS} sysctl net.ipv6.conf.eth0.disable_ipv6=1
+
 	ip netns exec ${NETNS} ip link set eth0 up
 	ip netns exec ${NETNS} ip link set eth1 up
 ;;
