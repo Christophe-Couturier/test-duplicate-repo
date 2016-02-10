@@ -132,7 +132,7 @@ def generate_configuration(params, envname):
     # Generate choirconf.xml
     tpl_params = {
         "station_id": params.get("stationid"),
-        "station_type": 5,
+        "station_type": 15,
     }
     logging.info("Creating configuration for mw-server: choirconf.xml")
     _process(tpl_params, "mw/choirconf.xml")
