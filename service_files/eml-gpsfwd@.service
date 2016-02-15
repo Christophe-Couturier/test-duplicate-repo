@@ -5,7 +5,7 @@ Requires=eml-netns@%i.service eml-mw-server@%i.service
 
 [Service]
 StandardOutput=null
-ExecStart=/sbin/ip netns exec %i choir_sub_proxy -m 200
+ExecStart=/sbin/ip netns exec %i choir_proxy -m 200
 
 [Install]
 WantedBy=multi-user.target
