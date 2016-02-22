@@ -63,7 +63,7 @@ def _get_if_mac(iface):
 def _network_conf(envnum):
     network = netaddr.IPNetwork(IP_NETWORK)
     subnets = list(network.subnet(SUBNET_PLEN))
-    net = subnets[envnum-1]
+    net = subnets[envnum]
 
     local = str(netaddr.IPAddress(net.first+1))
     remt = str(netaddr.IPAddress(net.first+2))
