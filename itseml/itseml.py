@@ -47,7 +47,7 @@ def start_env(params, envname):
     generate_configuration(params, envname)
 
     _service_action('start', envname)
-    _network_conf(params['id'])
+    _network_conf(int(params['id']))
     logging.info("Started environment: %s" % (envname))
     return "200 OK"
 
