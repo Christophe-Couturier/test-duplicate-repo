@@ -12,6 +12,6 @@ class ItsApplication(WebSocketApplication):
         self.ws.send(response)
 
 WebSocketServer(
-    ('', 8080),
+    ('::', 8080),
     Resource({'/': ItsApplication})
 ).serve_forever()
