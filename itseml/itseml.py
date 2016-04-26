@@ -77,10 +77,7 @@ def _network_conf(envnum):
         out = subprocess.check_call(cmd, shell=True)
 
 def _service_action(action, envname):
-    svcs = ['eml-netns', 'eml-itsnet', 'eml-mwtun', 'eml-mw-server',
-            'eml-gpsfwd', 'eml-gpsd', 'eml-gpspipe']
-    if "is-active" in action:
-        svcs.remove('eml-gpspipe')
+    svcs = ['eml-netns', 'eml-itsnet', 'eml-mwtun', 'eml-mw-server']
 
     services = ' '.join([x + '@%s' % (envname) for x in svcs])
 
@@ -112,6 +109,9 @@ def generate_configuration(params, envname):
         'position': 'mw/config/positionproviderconfig.xml',
         'cam': 'mw/config/caconfig.xml',
     }
+
+    params['gn']['lat'] =  params['position']['lat']
+    params['gn']['lon'] =  params['position']['lon']
 
     def _process(field, filename):
         # Replace True with "true" and False with "false"
