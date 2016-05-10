@@ -134,8 +134,31 @@ def generate_configuration(params, envname):
         "station_id": params.get("stationid"),
         "station_type": 15,
     }
-    logging.info("Creating configuration for mw-server: choirconf.xml")
+    logging.info("Creating configuration for mw-server: mw/choirconf.xml")
     _process(tpl_params, "mw/choirconf.xml")
+
+    # Generate trafficlight.xml
+    num_tl = len(params.get('trafficlight').get('states'))
+    states = params.get('trafficlight').get('states')
+    durations = params.get('trafficlight').get('durations')
+
+    tl_conf_list = []
+    for tl, (state, duration) in enumerate(zip(states, durations)):
+        tmpl = """\t\t<traffic%d length="%d" """ % (tl, len(state))
+        tl_line = ""
+        for i, (s, d) in enumerate(zip(state, duration)):
+           tl_line += """t{0}="{2}" s{0}="{1}" """.format(i, s, d)
+
+        #tmpl += ' '.join(tl_line)
+        tl_conf_list.append(tmpl + tl_line + "/>")
+
+
+    tl_params = {
+        "num_tl": num_tl,
+        "tl_conf": '\n'.join(tl_conf_list),
+    }
+    _process(tl_params, "mw/config/trafficlight.xml")
+    logging.info("Creating configuration for mw-server: mw/config/trafficlight.xml")
 
 def _dict_update(source, overrides):
     """Update a nested dictionary

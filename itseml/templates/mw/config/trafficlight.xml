@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <configuration>
-	<service start="false" instance="0">TrafficLight</service>
+	<service start="true" instance="0">TrafficLight</service>
 	<config>
 		<!-- Message Id for choir protocol -->
 		<pubsub outspat="100"/>
+		<!-- Publish on V2X network -->
+		<publish enabled="true" />
 		<!-- Number of traffic light -->
-		<index size="2"/>
+		<index size="$num_tl"/>
 		<!-- Traffic light, the tag must begin at 0
 			length : number of states
 			tx : duration of the phase x
 			sx : the state of the phase x
 		-->
-		<traffic0 length="3" t0="10" t1="10" t2="10" s0="3" s1="6" s2="7"/>
-		<traffic1 length="3" t0="10" t1="10" t2="10" s0="7" s1="3" s2="6"/>
+$tl_conf
 	</config>
 </configuration>

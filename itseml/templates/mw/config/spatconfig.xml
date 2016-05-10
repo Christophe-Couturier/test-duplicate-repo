@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <configuration>
-	<service start="false" instance="0">SpatService</service>
+	<service start="true" instance="0">SpatService</service>
 	<config>
 		<!-- Message Id for choir protocol -->
 		<pubsub senderid="71" outspat="4" outspatjson="1003"
