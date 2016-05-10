@@ -19,8 +19,6 @@
      "states": [[3, 6, 7], [3, 6, 7]],
      "durations": [[10, 5, 10], [3,3,3]],
      "map": {
-        "msgID": 18,
-        "msgIssueRevision": 0,
         "intersections": [
             {
                 "id": {
