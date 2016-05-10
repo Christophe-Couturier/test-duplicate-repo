@@ -17,6 +17,60 @@
   },
   "trafficlight": {
      "states": [[3, 6, 7], [3, 6, 7]],
-     "durations": [[10, 5, 10], [3,3,3]]
+     "durations": [[10, 5, 10], [3,3,3]],
+     "map": {
+        "msgID": 18,
+        "msgIssueRevision": 0,
+        "intersections": [
+            {
+                "id": {
+                    "id": 1
+                },
+                "revision": 1,
+                "refPoint": {
+                  "lon": 476964864,
+                  "lat": 65376972
+                },
+                "laneSet": [
+                    {
+                        "laneID": 1,
+                        "laneAttributes": {
+                            "directionalUse": "01",
+                            "sharedWith": "1010101010",
+                            "laneType": {
+                                "0": "1010101010101010"
+                            }
+                        },
+                        "nodeList": {
+                            "0": [
+                                {
+                                    "delta": {
+                                        "0": {
+                                            "x": 123,
+                                            "y": 23
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        "connectsTo": [
+                            {
+                                "connectingLane": {
+                                    "lane": 2
+                                },
+                                "signalGroup": 1
+                            },
+                            {
+                                "connectingLane": {
+                                    "lane": 1
+                                },
+                                "signalGroup": 2
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
   }
 }

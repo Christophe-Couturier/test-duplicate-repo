@@ -1,0 +1,27 @@
+#!/usr/bin/python2
+import json
+import os.path
+import sys
+import time
+import websocket
+import pprint
+
+
+websocket.enableTrace(True)
+ws = websocket.WebSocket()
+ws.connect("ws://localhost:8080/pubsub/pub/33")
+
+
+CONF_PATH = "/var/run/itseml/"
+
+def send_msg(envname):
+    msg = ''
+    with open(os.path.join(CONF_PATH, envname, 'map.json'), 'r') as f:
+        msg = f.read()
+        pprint.pprint(msg);
+    ws.send(msg)
+
+if __name__ == '__main__':
+    while True:
+        send_msg(sys.argv[1])
+        time.sleep(1)

@@ -13,6 +13,7 @@ import sys
 import pprint
 import random
 import netaddr
+import json
 
 from shutil import copyfile
 from string import Template
@@ -48,6 +49,7 @@ def start_env(params, envname):
 
     _service_action('start', envname)
     _network_conf(int(params['id']))
+    map_sender(params.get('trafficlight').get('map'), envname)
     logging.info("Started environment: %s" % (envname))
     return "200 OK"
 
@@ -93,7 +95,7 @@ def status_env(envname):
 
 def generate_configuration(params, envname):
     # Copy files that don't need modifications
-    filelist = ['log4j.properties', 'config/spatconfig.xml', 'config/trafficlight.xml',
+    filelist = ['log4j.properties', 'config/spatconfig.xml', 'config/mapconfig.xml',
             'config/v2xconfig.xml', 'config/vehiclediagnosticconfig.xml', 'config/ldmservice.xml',
             'config/rhsservice.xml', 'config/dsrcmitigation.xml']
 
@@ -159,6 +161,13 @@ def generate_configuration(params, envname):
     }
     _process(tl_params, "mw/config/trafficlight.xml")
     logging.info("Creating configuration for mw-server: mw/config/trafficlight.xml")
+
+
+def map_sender(params, envname):
+    mapjson = json.dumps({'map':params})
+    with open(os.path.join(CONF_PATH, envname, 'map.json'), 'w') as f:
+        f.write(mapjson)
+    out = subprocess.check_call("systemctl start eml-mapsender@%s" % (envname), shell=True)
 
 def _dict_update(source, overrides):
     """Update a nested dictionary

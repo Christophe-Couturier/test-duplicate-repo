@@ -12,6 +12,7 @@
 
     <services>
          <service name="SpatService" class="fr.yogoko.choir.facilities.spatservice.SpatService"/>
+         <service name="MapService" class="fr.yogoko.choir.facilities.mapservice.MapService"/>
          <service name="CaService" class="fr.yogoko.choir.facilities.caservice.CaServiceImpl"/>
          <service name="V2XAdapter" class="fr.yogoko.choir.facilities.v2xservice.V2XAdapter"/>
          <service name="VdpService" class="fr.yogoko.choir.facilities.vehicledataprovisioning.VdpService"/>
