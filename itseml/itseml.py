@@ -49,7 +49,8 @@ def start_env(params, envname):
 
     _service_action('start', envname)
     _network_conf(int(params['id']))
-    map_sender(params.get('trafficlight').get('map'), envname)
+    if 'map' in params.get('trafficlight'):
+        map_sender(params.get('trafficlight').get('map'), envname)
     logging.info("Started environment: %s" % (envname))
     return "200 OK"
 
@@ -195,6 +196,10 @@ def process_message(params):
             "forceactionid": False,
             "autoupdate": False,
         },
+        "trafficlight": {
+            "states": [],
+            "durations": [],
+	},
     }
 
 
