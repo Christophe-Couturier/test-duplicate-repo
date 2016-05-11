@@ -23,7 +23,7 @@ CONF_PATH = "/var/run/itseml/"
 IP_NETWORK= "10.1.1.0/24"
 SUBNET_PLEN = 30
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 # create formatter
@@ -84,6 +84,7 @@ def _service_action(action, envname):
 
     services = ' '.join([x + '@%s' % (envname) for x in svcs])
 
+    logging.info("{0} services: {1}".format(action, services))
     subprocess.check_call("systemctl %s %s" % (action, services), shell=True)
 
 def stop_env(envname, envid):
@@ -168,6 +169,7 @@ def map_sender(params, envname):
     mapjson = json.dumps({'map':params})
     with open(os.path.join(CONF_PATH, envname, 'map.json'), 'w') as f:
         f.write(mapjson)
+    logging.info("Starting eml-mapsender@%s service" % (envname))
     out = subprocess.check_call("systemctl start eml-mapsender@%s" % (envname), shell=True)
 
 def _dict_update(source, overrides):

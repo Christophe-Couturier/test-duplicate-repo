@@ -2,6 +2,9 @@
 from geventwebsocket import WebSocketServer, WebSocketApplication, Resource
 import itseml
 import json
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
 
 class ItsApplication(WebSocketApplication):
     def on_message(self, message):
