@@ -49,8 +49,8 @@ def start_env(params, envname):
 
     _service_action('start', envname)
     _network_conf(int(params['id']))
-    if 'intersections' in params.get('trafficlight').get('map'):
-        map_sender(params.get('trafficlight').get('map'), envname)
+    if 'intersections' in params.get('map'):
+        map_sender(params.get('map'), envname)
     logging.info("Started environment: %s" % (envname))
     return "200 OK"
 
@@ -199,10 +199,10 @@ def process_message(params):
         "trafficlight": {
             "states": [],
             "durations": [],
-            "map": {
-                "msgID": 18,
-                "msgIssueRevision": 0,
-            },
+        },
+        "map": {
+            "msgID": 18,
+            "msgIssueRevision": 0,
         },
     }
 

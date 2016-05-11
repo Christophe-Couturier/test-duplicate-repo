@@ -1,56 +1,23 @@
 {
-  "action": "start",
-  "id": 1,
-  "stationid": 1111,
-  "gn": {
-     "gn_addr": "0000:4636:2ea8:87ee",
-     "geobc_fwd_alg": 0
-  },
-  "denm": {
-     "forwarding": true,
-     "forceactionid": false,
-     "autoupdate": false
-  },
-  "position": {
-     "lat": "48.837590",
-     "lon": "2.101363"
-  },
-  "trafficlight": {
-     "states": [[3, 6, 7], [3, 6, 7]],
-     "durations": [[10, 5, 10], [3,3,3]],
-     "map": {
+    "action": "start",
+    "denm": {
+        "autoupdate": false,
+        "forceactionid": false,
+        "forwarding": true
+    },
+    "gn": {
+        "geobc_fwd_alg": 0,
+        "gn_addr": "0000:4636:2ea8:87ee"
+    },
+    "id": 1,
+    "map": {
         "intersections": [
             {
                 "id": {
                     "id": 1
                 },
-                "revision": 1,
-                "refPoint": {
-                  "lon": 476964864,
-                  "lat": 65376972
-                },
                 "laneSet": [
                     {
-                        "laneID": 1,
-                        "laneAttributes": {
-                            "directionalUse": "01",
-                            "sharedWith": "1010101010",
-                            "laneType": {
-                                "0": "1010101010101010"
-                            }
-                        },
-                        "nodeList": {
-                            "0": [
-                                {
-                                    "delta": {
-                                        "0": {
-                                            "x": 123,
-                                            "y": 23
-                                        }
-                                    }
-                                }
-                            ]
-                        },
                         "connectsTo": [
                             {
                                 "connectingLane": {
@@ -64,11 +31,74 @@
                                 },
                                 "signalGroup": 2
                             }
-                        ]
+                        ],
+                        "laneAttributes": {
+                            "directionalUse": "01",
+                            "laneType": {
+                                "0": "1010101010101010"
+                            },
+                            "sharedWith": "1010101010"
+                        },
+                        "laneID": 1,
+                        "nodeList": {
+                            "0": [
+                                {
+                                    "delta": {
+                                        "0": {
+                                            "x": 123,
+                                            "y": 23
+                                        }
+                                    }
+                                },
+                                {
+                                    "delta": {
+                                        "0": {
+                                            "x": 126,
+                                            "y": 26
+                                        }
+                                    }
+                                }
+                            ]
+                        }
                     }
-                ]
+                ],
+                "refPoint": {
+                    "lat": 65376972,
+                    "lon": 476964864
+                },
+                "revision": 1
             }
         ]
+    },
+    "position": {
+        "lat": "48.837590",
+        "lon": "2.101363"
+    },
+    "stationid": 1111,
+    "trafficlight": {
+        "durations": [
+            [
+                10,
+                5,
+                10
+            ],
+            [
+                3,
+                3,
+                3
+            ]
+        ],
+        "states": [
+            [
+                3,
+                6,
+                7
+            ],
+            [
+                3,
+                6,
+                7
+            ]
+        ]
     }
-  }
 }
