@@ -213,6 +213,10 @@ def process_message(params):
 
     logging.debug("Processing received JSON:\n%s", pprint.pformat(defaults))
 
+    defaultsjson = json.dumps(defaults)
+    with open(os.path.join(CONF_PATH, envname, 'request.json'), 'w') as f:
+        f.write(defaultsjson)
+
     response = "304 Not modified"
 
     try:
