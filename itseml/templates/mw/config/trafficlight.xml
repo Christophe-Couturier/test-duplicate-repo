@@ -3,9 +3,7 @@
 	<service start="true" instance="0">TrafficLight</service>
 	<config>
 		<!-- Message Id for choir protocol -->
-		<pubsub outspat="100"/>
-		<!-- Publish on V2X network -->
-		<publish enabled="true" />
+		<pubsub outspat="34"/>
 		<!-- Number of traffic light -->
 		<index size="$num_tl"/>
 		<!-- Traffic light, the tag must begin at 0
