@@ -204,7 +204,8 @@ def process_message(params):
         },
         "map": {
             "msgID": 18,
-            "msgIssueRevision": 0,
+            "msgSubID": 1,
+            "msgIssueRevision": 1,
         },
     }
 
