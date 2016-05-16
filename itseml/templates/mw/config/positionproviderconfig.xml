@@ -1,13 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <configuration>
 	<service start="true" instance="0">PositionProvider</service>
-	<config>
-		<!-- Message Id for choir protocol -->
-		<pubsub positionmessageId="200"  />
-		<!-- position provider static/gpsd  time provider system/gpd-->
-		<provider position="static" time="system"/>
-		<!-- specific configuration for position provider -->
-		<staticposition latitude="$lat" longitude="$lon" refreshintervalms="1000" />
-		<gpsd address="localhost" port="2947" />
-	</config>
+        <service start="true" instance="0">PositionProvider</service>
+        <config>
+                <!-- Message Id for choir protocol-->
+                <pubsub applicationid="20"
+                        positionmessageid="201"
+                        gpsdrelayappid="21"
+                        relaymessageid="202" />
+
+                <!-- Cache Id for choir protocol-->
+                <cache vdpcacheid="0"
+                       vdpobjectid="1" />
+
+                <!-- Configuration for static provider-->
+                <!-- Also possible to specify errors
+                                posmajoraxisdirection="0"
+                                possemimajoraxiserror="0"
+                                possemiminoraxiserror="0"
+                                altitudeerror="0"
+                                speederror="0"
+                                headingerror="0"
+                                climberror="0"
+                -->
+                <staticprovider enable="true"
+                                latitude="$lat"
+                                longitude="$lon"
+                                altitude="0"
+                                speed="0"
+                                heading="0"
+                                climb="0"
+                                leapseconds2004="4" />
+
+                <!-- Configuration for gps provider -->
+                <gpsprovider enable="false"
+                             address="127.0.0.1"
+                             port="2947"
+                             retryinterval="3000" />
+
+                <!-- Configuration for gpsd relay -->
+                <gpsdrelay enable="true"
+                           refreshintervalms="1000" />
+        </config>
 </configuration>
