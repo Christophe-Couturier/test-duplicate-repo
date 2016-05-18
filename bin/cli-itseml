@@ -2,8 +2,11 @@
 # -*- coding: utf-8 -*-
 import json
 import sys
+import logging
 
 import itseml
+
+logging.basicConfig(level=logging.DEBUG)
 
 if __name__ == '__main__':
     msg = json.load(sys.stdin)
