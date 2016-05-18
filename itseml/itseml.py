@@ -37,14 +37,6 @@ stream_handler.setFormatter(formatter)
 logger.addHandler(stream_handler)
 
 def start_env(params, envname):
-    directory = "/var/run/itseml/%s/mw/config" % (envname)
-    logging.info("Creating destination directory: %s", directory)
-
-    try:
-        distutils.dir_util.mkpath(directory)
-    except DistutilsFileError as e:
-        logging.error("Failed to create directory: %s" % (e))
-
     generate_configuration(params, envname)
 
     _service_action('start', envname)
@@ -215,6 +207,14 @@ def process_message(params):
     envname = "env" + str(defaults["id"])
 
     logging.debug("Processing received JSON:\n%s", pprint.pformat(defaults))
+
+    directory = "/var/run/itseml/%s/mw/config" % (envname)
+    logging.info("Creating destination directory: %s", directory)
+
+    try:
+        distutils.dir_util.mkpath(directory)
+    except DistutilsFileError as e:
+        logging.error("Failed to create directory: %s" % (e))
 
     defaultsjson = json.dumps(defaults)
     with open(os.path.join(CONF_PATH, envname, 'request.json'), 'w') as f:
