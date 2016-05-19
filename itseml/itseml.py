@@ -80,6 +80,8 @@ def _service_action(action, envname):
     subprocess.check_call("systemctl %s %s" % (action, services), shell=True)
 
 def stop_env(envname, envid):
+    logging.info("Stopping eml-mapsender@%s service" % (envname))
+    out = subprocess.check_call("systemctl stop eml-mapsender@%s" % (envname), shell=True)
     _service_action('stop', envname)
     logging.info("Stopped environment: %s" % (envname))
     return "200 OK"
