@@ -216,9 +216,10 @@ def process_message(params):
     except DistutilsFileError as e:
         logging.error("Failed to create directory: %s" % (e))
 
-    defaultsjson = json.dumps(defaults)
-    with open(os.path.join(CONF_PATH, envname, 'request.json'), 'w') as f:
-        f.write(defaultsjson)
+    if defaults['action'] == 'start':
+        defaultsjson = json.dumps(defaults)
+        with open(os.path.join(CONF_PATH, envname, 'request.json'), 'w') as f:
+            f.write(defaultsjson)
 
     response = "304 Not modified"
 
