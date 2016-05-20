@@ -142,12 +142,12 @@ def generate_configuration(params, envname):
 
     tl_conf_list = []
     for tl, (state, duration) in enumerate(zip(states, durations)):
-        tmpl = """\t\t<traffic%d length="%d" """ % (tl, len(state))
         tl_line = ""
-        for i, (s, d) in enumerate(zip(state, duration)):
-           tl_line += """t{0}="{2}" s{0}="{1}" """.format(i, s, d)
+        st_dur_list = [(x,y) for x,y in zip(state, duration) if y != 0 ]
+        for i, (s, d) in enumerate(st_dur_list):
+            tl_line += """t{0}="{2}" s{0}="{1}" """.format(i, s, d)
 
-        #tmpl += ' '.join(tl_line)
+        tmpl = """\t\t<traffic%d length="%d" """ % (tl, len(st_dur_list))
         tl_conf_list.append(tmpl + tl_line + "/>")
 
 
