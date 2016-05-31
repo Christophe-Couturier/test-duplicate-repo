@@ -14,14 +14,22 @@ ws.connect("ws://localhost:8080/pubsub/pub/33")
 
 CONF_PATH = "/var/run/itseml/"
 
-def send_msg(envname):
-    msg = ''
+def send_map(envname):
+    interval = 1000
     with open(os.path.join(CONF_PATH, envname, 'map.json'), 'r') as f:
-        msg = f.read()
-        pprint.pprint(msg);
-    ws.send(msg)
+        map_mesg = json.load(f)
+
+    try:
+        interval =  map_mesg['map']['interval']
+        del map_mesg['map']['interval']
+    except KeyError as e:
+        pass
+
+    map_json = json.dumps(map_mesg)
+
+    while True:
+        ws.send(map_json)
+        time.sleep(float(interval)/1000.0)
 
 if __name__ == '__main__':
-    while True:
-        send_msg(sys.argv[1])
-        time.sleep(1)
+    send_map(sys.argv[1])
