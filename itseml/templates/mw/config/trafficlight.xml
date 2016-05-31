@@ -4,6 +4,8 @@
 	<config>
 		<!-- Message Id for choir protocol -->
 		<pubsub outspat="34"/>
+		<!-- Interval between message emissions (in ms)-->
+		<emission interval="$interval"/>
 		<!-- Number of traffic light -->
 		<index size="$num_tl"/>
 		<!-- Traffic light, the tag must begin at 0

@@ -11,6 +11,7 @@
     },
     "id": 1,
     "map": {
+        "interval": 1000,
         "intersections": [
             {
                 "id": {
@@ -76,6 +77,7 @@
     },
     "stationid": 1111,
     "trafficlight": {
+        "interval": 500,
         "durations": [
             [
                 10,

@@ -153,6 +153,7 @@ def generate_configuration(params, envname):
 
     tl_params = {
         "num_tl": num_tl,
+        "interval": params.get('trafficlight').get('interval', 500),
         "tl_conf": '\n'.join(tl_conf_list),
     }
     _process(tl_params, "mw/config/trafficlight.xml")
