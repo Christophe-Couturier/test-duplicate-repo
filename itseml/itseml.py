@@ -43,6 +43,7 @@ def start_env(params, envname):
     _network_conf(int(params['id']))
     if 'intersections' in params.get('map'):
         map_sender(params.get('map'), envname)
+        mqtt_notify(envname)
     logging.info("Started environment: %s" % (envname))
     return "200 OK"
 
@@ -82,6 +83,8 @@ def _service_action(action, envname):
 def stop_env(envname, envid):
     logging.info("Stopping eml-mapsender@%s service" % (envname))
     out = subprocess.check_call("systemctl stop eml-mapsender@%s" % (envname), shell=True)
+    logging.info("Stopping eml-mqtt-notify@%s service" % (envname))
+    out = subprocess.check_call("systemctl stop eml-mqtt-notify@%s" % (envname), shell=True)
     _service_action('stop', envname)
     logging.info("Stopped environment: %s" % (envname))
     return "200 OK"
@@ -159,6 +162,9 @@ def generate_configuration(params, envname):
     _process(tl_params, "mw/config/trafficlight.xml")
     logging.info("Creating configuration for mw-server: mw/config/trafficlight.xml")
 
+def mqtt_notify(envname):
+    logging.info("Starting eml-mqtt-notify@%s service" % (envname))
+    out = subprocess.check_call("systemctl start eml-mqtt-notify@%s" % (envname), shell=True)
 
 def map_sender(params, envname):
     mapjson = json.dumps({'map':params})

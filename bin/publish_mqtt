@@ -1,0 +1,55 @@
+#!/usr/bin/python2
+
+import json
+import pprint
+import sys
+
+import websocket
+import mosquitto
+
+
+websocket.enableTrace(False)
+ws = websocket.WebSocket()
+ws.connect("ws://localhost:8080/pubsub/sub/34")
+
+MQTT_BROKER = "localhost"
+MQTT_PORT = 1883
+
+def state_to_str(state):
+    d = {
+        # Off or unavailable
+        0: "RED_OFF|ORANGE_OFF|GREEN_OFF",
+        1: "RED_OFF|ORANGE_OFF|GREEN_OFF",
+
+        # Reds
+        2: "RED_BLINK|ORANGE_OFF|GREEN_OFF",
+        3: "RED_ON|ORANGE_OFF|GREEN_OFF",
+
+        # Green
+        4: "RED_OFF|ORANGE_OFF|GREEN_ON",
+        5: "RED_OFF|ORANGE_OFF|GREEN_ON",
+        6: "RED_OFF|ORANGE_OFF|GREEN_ON",
+
+        # Orange
+        7: "RED_OFF|ORANGE_OFF|GREEN_OFF",
+        8: "RED_OFF|ORANGE_OFF|GREEN_OFF",
+        9: "RED_OFF|ORANGE_BLINK|GREEN_OFF",
+    }
+
+    return d[state]
+
+def publish_mqtt():
+    topic = "/scheduler/setstate/%d"
+    cli = mosquitto.Mosquitto()
+    cli.connect(MQTT_BROKER, MQTT_PORT)
+
+    while True:
+        spatjson = json.loads(ws.recv())
+        states = spatjson['spat']['intersections'][0]['states']
+        for st in states:
+            signal_group = st['signalGroup']
+            evt_state = state_to_str(st['stateTimeSpeed'][0]['eventState'])
+            cli.publish(topic % (signal_group), evt_state)
+
+if __name__ == '__main__':
+    publish_mqtt()
