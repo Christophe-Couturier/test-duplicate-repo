@@ -173,6 +173,9 @@ def map_sender(params, envname):
     logging.info("Starting eml-mapsender@%s service" % (envname))
     out = subprocess.check_call("systemctl start eml-mapsender@%s" % (envname), shell=True)
 
+def stop_all():
+    _service_action("stop", "*");
+
 def _dict_update(source, overrides):
     """Update a nested dictionary
 
@@ -213,9 +216,13 @@ def process_message(params):
 
     defaults = _dict_update(defaults, params)
 
-    envname = "env" + str(defaults["id"])
-
     logging.debug("Processing received JSON:\n%s", pprint.pformat(defaults))
+
+    if defaults['action'] == 'stop_all':
+        stop_all()
+        return "200 OK"
+
+    envname = "env" + str(defaults["id"])
 
     directory = "/var/run/itseml/%s/mw/config" % (envname)
     logging.info("Creating destination directory: %s", directory)
