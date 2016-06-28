@@ -20,8 +20,6 @@
          <service name="TrafficLight" class="fr.yogoko.choir.facilities.trafficlight.TrafficLightSender"/>
          <service name="DenService" class="fr.yogoko.choir.facilities.denservice.DenServiceImpl"/>
          <service name="LdmService" class="fr.yogoko.choir.facilities.ldm.LdmService"/>
-         <service name="RhsService" class="fr.yogoko.choir.facilities.rhsservice.RhsService"/>
-         <service name="DsrcMitigation" class="fr.yogoko.choir.facilities.dsrcmitigationservice.DsrcMitigationService"/>
     </services>
 
     <websocket
