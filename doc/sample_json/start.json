@@ -11,6 +11,9 @@
      "forceactionid": false,
      "autoupdate": false
   },
+  "ivi": {
+     "autoupdate": false
+  },
   "position": {
      "lat": "48.837590",
      "lon": "2.101363"

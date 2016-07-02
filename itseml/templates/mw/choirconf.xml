@@ -19,6 +19,7 @@
          <service name="PositionProvider" class="fr.yogoko.choir.facilities.positionmanager.PositionProviderImpl"/>
          <service name="TrafficLight" class="fr.yogoko.choir.facilities.trafficlight.TrafficLightSender"/>
          <service name="DenService" class="fr.yogoko.choir.facilities.denservice.DenServiceImpl"/>
+         <service name="IviService" class="fr.yogoko.choir.facilities.iviservice.IviServiceImpl"/>
          <service name="LdmService" class="fr.yogoko.choir.facilities.ldm.LdmService"/>
     </services>
 

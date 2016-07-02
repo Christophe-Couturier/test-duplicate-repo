@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+	<service start="true" instance="0">IviService</service>
+	<config>
+		<!-- Application Id for choir protocol -->
+		<pubsub senderid="107" outivi="7" triggerivi="27" handlerid="97"
+		        receiverid="107" inivi="17" injsonivi="37" outjsonivi="47" answerivi="57"/>
+
+		<!-- Enable autoUpdate of IVI -->
+		<autoupdate enabled="false"/>
+
+		<!-- Cache for IVI -->
+		<cache originating="3" receiving="31"/>
+	</config>
+</configuration>

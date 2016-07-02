@@ -3,16 +3,18 @@
 	<service start="true" instance="0">V2XAdapter</service>
 	<config>
 			<!-- number of senders and receivers -->
-			<index sender="4" receiver="4"/>
+			<index sender="5" receiver="5"/>
 			<!-- receiver parameter interface, multicast address, port and choir message id -->
 			<receiver1 iface="tun0" group="ff02::5678" port="2001"	publish="12" header="false"/>
 			<receiver2 iface="tun0" group="ff02::1234" port="2002"	publish="15" header="true"/>
 			<receiver3 iface="tun0" group="ff02::5678" port="2003"	publish="13" header="false"/>
 			<receiver4 iface="tun0" group="ff02::5678" port="2004"	publish="14" header="false"/>
+			<receiver5 iface="tun0" group="ff02::1234" port="2006"	publish="17" header="true"/>
 			<!-- sender parameter interface, multicast address, port, choir message id and application id -->
 			<sender1 iface="tun0" group="ff02::5678" port="2001" subscribe="2"	appid="2002" header="false"/>
 			<sender2 iface="tun0" group="ff02::1234" port="2002" subscribe="5"	appid="2005" header="true" msgtype="64"/>
 			<sender3 iface="tun0" group="ff02::5678" port="2003" subscribe="3"	appid="2003" header="false"/>
 			<sender4 iface="tun0" group="ff02::5678" port="2004" subscribe="4"	appid="2004" header="false"/>
+			<sender5 iface="tun0" group="ff02::1234" port="2006" subscribe="7"	appid="2006" header="true" msgtype="64"/>
 	</config>
 </configuration>

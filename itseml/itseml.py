@@ -108,6 +108,7 @@ def generate_configuration(params, envname):
         'denm': 'mw/config/denservice.xml',
         'position': 'mw/config/positionproviderconfig.xml',
         'cam': 'mw/config/caconfig.xml',
+        'ivi': 'mw/config/iviservice.xml',
     }
 
     params['gn']['lat'] =  params['position']['lat']
@@ -199,6 +200,9 @@ def process_message(params):
         "denm": {
             "forwarding": True,
             "forceactionid": False,
+            "autoupdate": False,
+        },
+        "ivi": {
             "autoupdate": False,
         },
         "trafficlight": {
