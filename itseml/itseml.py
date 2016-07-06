@@ -133,7 +133,7 @@ def generate_configuration(params, envname):
     # Generate choirconf.xml
     tpl_params = {
         "station_id": params.get("stationid"),
-        "station_type": 15,
+        "station_type": params.get("station_type"),
     }
     logging.info("Creating configuration for mw-server: mw/choirconf.xml")
     _process(tpl_params, "mw/choirconf.xml")
@@ -192,7 +192,8 @@ def _dict_update(source, overrides):
 def process_message(params):
     rng = random.SystemRandom()
     defaults = {
-        "stationid": rng.randint(1,65535),
+        "stationid": rng.randint(1, 65535),
+        "station_type": 15,
         "gn": {
             "gn_addr": "0:0:0:1",
             "geobc_fwd_alg": 0,

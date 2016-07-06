@@ -2,6 +2,7 @@
   "action": "start",
   "id": 1,
   "stationid": 1111,
+  "station_type": 15,
   "gn": {
      "gn_addr": "0000:4636:2ea8:87ee",
      "geobc_fwd_alg": 0
