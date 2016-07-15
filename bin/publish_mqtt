@@ -12,8 +12,15 @@ websocket.enableTrace(False)
 ws = websocket.WebSocket()
 ws.connect("ws://localhost:8080/pubsub/sub/34")
 
-MQTT_BROKER = "localhost"
-MQTT_PORT = 1883
+def get_default_gateway_linux():
+    """Read the default gateway directly from /proc."""
+    with open("/proc/net/route") as fh:
+        for line in fh:
+            fields = line.strip().split()
+            if fields[1] != '00000000' or not int(fields[3], 16) & 2:
+                continue
+
+            return socket.inet_ntoa(struct.pack("<L", int(fields[2], 16)))
 
 def state_to_str(state):
     d = {
@@ -39,6 +46,8 @@ def state_to_str(state):
     return d[state]
 
 def publish_mqtt():
+    MQTT_BROKER = get_default_gateway_linux()
+    MQTT_PORT = 1883
     topic = "/scheduler/setstate/%d"
     cli = mosquitto.Mosquitto()
     cli.connect(MQTT_BROKER, MQTT_PORT)
