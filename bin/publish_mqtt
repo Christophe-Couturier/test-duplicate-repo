@@ -2,7 +2,10 @@
 
 import json
 import pprint
+import socket
+import struct
 import sys
+import time
 
 import websocket
 import mosquitto
