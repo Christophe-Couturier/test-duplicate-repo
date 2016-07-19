@@ -55,13 +55,31 @@ def publish_mqtt():
     cli = mosquitto.Mosquitto()
     cli.connect(MQTT_BROKER, MQTT_PORT)
 
+    last_evt_state = ''
     while True:
         spatjson = json.loads(ws.recv())
         states = spatjson['spat']['intersections'][0]['states']
         for st in states:
             signal_group = st['signalGroup']
-            evt_state = state_to_str(st['stateTimeSpeed'][0]['eventState'])
-            cli.publish(topic % (signal_group), evt_state)
+            evt_state = st['stateTimeSpeed'][0]['eventState']
+
+            if evt_state != last_evt_state:
+                last_evt_state = evt_state
+                if evt_state == 2:
+                    red_on= "\x01\x00\x00"
+                    red_off = "\x00\x00\x00"
+                    cli.publish(topic % (signal_group), orange_on)
+                    time.sleep(1)
+                    cli.publish(topic % (signal_group), orange_off)
+                elif evt_state == 9:
+                    orange_on = "\x00\x01\x00"
+                    orange_off = "\x00\x00\x00"
+
+                    cli.publish(topic % (signal_group), orange_on)
+                    time.sleep(1)
+                    cli.publish(topic % (signal_group), orange_off)
+                else:
+                    cli.publish(topic % (signal_group), state_to_str(evt_state)
 
 if __name__ == '__main__':
     publish_mqtt()
