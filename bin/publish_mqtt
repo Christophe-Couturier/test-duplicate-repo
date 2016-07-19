@@ -28,22 +28,22 @@ def get_default_gateway_linux():
 def state_to_str(state):
     d = {
         # Off or unavailable
-        0: "RED_OFF|ORANGE_OFF|GREEN_OFF",
-        1: "RED_OFF|ORANGE_OFF|GREEN_OFF",
+        0: "\x00\x00\x00",
+        1: "\x00\x00\x00",
 
         # Reds
-        2: "RED_BLINK|ORANGE_OFF|GREEN_OFF",
-        3: "RED_ON|ORANGE_OFF|GREEN_OFF",
+        2: "\x01\x00\x00",
+        3: "\x01\x00\x00",
 
         # Green
-        4: "RED_OFF|ORANGE_OFF|GREEN_ON",
-        5: "RED_OFF|ORANGE_OFF|GREEN_ON",
-        6: "RED_OFF|ORANGE_OFF|GREEN_ON",
+        4: "\x00\x00\x01",
+        5: "\x00\x00\x01",
+        6: "\x00\x00\x01",
 
         # Orange
-        7: "RED_OFF|ORANGE_OFF|GREEN_OFF",
-        8: "RED_OFF|ORANGE_OFF|GREEN_OFF",
-        9: "RED_OFF|ORANGE_BLINK|GREEN_OFF",
+        7: "\x00\x01\x00",
+        8: "\x00\x01\x00",
+        9: "\x00\x01\x00",
     }
 
     return d[state]
