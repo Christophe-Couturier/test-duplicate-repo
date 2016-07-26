@@ -51,7 +51,7 @@ def state_to_str(state):
 def publish_mqtt():
     MQTT_BROKER = get_default_gateway_linux()
     MQTT_PORT = 1883
-    topic = "/scheduler/setstate/TL_%.2d"
+    topic = "TrafficLight/InTopic/TL_%.2d/LightRequest"
     cli = mosquitto.Mosquitto()
     cli.connect(MQTT_BROKER, MQTT_PORT)
 
