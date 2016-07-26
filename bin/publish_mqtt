@@ -63,23 +63,22 @@ def publish_mqtt():
             signal_group = st['signalGroup']
             evt_state = st['stateTimeSpeed'][0]['eventState']
 
-            if evt_state != last_evt_state:
-                last_evt_state = evt_state
-                if evt_state == 2:
-                    red_on= "\x01\x00\x00"
-                    red_off = "\x00\x00\x00"
-                    cli.publish(topic % (signal_group), orange_on)
-                    time.sleep(1)
-                    cli.publish(topic % (signal_group), orange_off)
-                elif evt_state == 9:
-                    orange_on = "\x00\x01\x00"
-                    orange_off = "\x00\x00\x00"
+            if evt_state == 2:
+                red_on= "\x01\x00\x00"
+                red_off = "\x00\x00\x00"
+                cli.publish(topic % (signal_group), orange_on)
+                time.sleep(1.2)
+                cli.publish(topic % (signal_group), orange_off)
+            elif evt_state == 9:
+                orange_on = "\x00\x01\x00"
+                orange_off = "\x00\x00\x00"
 
-                    cli.publish(topic % (signal_group), orange_on)
-                    time.sleep(1)
-                    cli.publish(topic % (signal_group), orange_off)
-                else:
-                    cli.publish(topic % (signal_group), state_to_str(evt_state)
+                cli.publish(topic % (signal_group), orange_on)
+                time.sleep(1)
+                cli.publish(topic % (signal_group), orange_off)
+            elif evt_state != last_evt_state:
+                cli.publish(topic % (signal_group), state_to_str(evt_state))
+                last_evt_state = evt_state
 
 if __name__ == '__main__':
     publish_mqtt()
