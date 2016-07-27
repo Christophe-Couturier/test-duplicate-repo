@@ -66,9 +66,9 @@ def publish_mqtt():
             if evt_state == 2:
                 red_on= "\x01\x00\x00"
                 red_off = "\x00\x00\x00"
-                cli.publish(topic % (signal_group), orange_on)
+                cli.publish(topic % (signal_group), red_on)
                 time.sleep(1.2)
-                cli.publish(topic % (signal_group), orange_off)
+                cli.publish(topic % (signal_group), red_off)
             elif evt_state == 9:
                 orange_on = "\x00\x01\x00"
                 orange_off = "\x00\x00\x00"
