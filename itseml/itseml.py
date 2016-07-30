@@ -95,7 +95,7 @@ def status_env(envname):
 def generate_configuration(params, envname):
     # Copy files that don't need modifications
     filelist = ['log4j.properties', 'config/spatconfig.xml',
-            'config/v2xconfig.xml', 'config/vehiclediagnosticconfig.xml', 'config/ldmservice.xml']
+            'config/v2xconfig.xml', 'config/ldmservice.xml']
 
     src = [os.path.join(TMPL_PATH, "mw", x) for x in filelist]
     dst = [os.path.join("/var/run/itseml/%s/mw" % (envname), x) for x in filelist]
