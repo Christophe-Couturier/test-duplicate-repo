@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<configuration>
-	<service start="true" instance="0">MapService</service>
-	<config>
-		<!-- Message Id for choir protocol -->
-		<pubsub senderid="81" outmap="3" outmapjson="33"
-		        receiverid="82" inmap="13" inmapjson="23" />
-	</config>
-</configuration>

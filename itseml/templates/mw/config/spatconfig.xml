@@ -2,8 +2,12 @@
 <configuration>
 	<service start="true" instance="0">SpatService</service>
 	<config>
-		<!-- Message Id for choir protocol -->
-		<pubsub senderid="71" outspat="4" outspatjson="34"
-		        receiverid="72" inspat="14" inspatjson="24" />
+		<!-- Choir protocol configuration for SPAT/MAP -->
+		<pubsub spatsenderid="71" outspat="4" outspatjson="34"
+			spatreceiverid="72" inspat="14" inspatjson="24"
+			mapsenderid="81" outmap="3" outmapjson="33"
+			mapreceiverid="82" inmap="13" inmapjson="23" />
+
+		<cache id="2"/>
 	</config>
 </configuration>
