@@ -48,6 +48,45 @@ def state_to_str(state):
 
     return d[state]
 
+def send_red(cli, topic):
+    red_on = "\x01\x00\x00"
+    red_off = "\x00\x00\x00"
+    if not hasattr(send_red, "last_state"):
+        send_red.last_state = 0
+    if not hasattr(send_red, "last_call"):
+        send_red.last_call = 0
+
+    now = time.time()
+    if (now - send_red.last_call) <= 1.2:
+        pass
+    else:
+        send_red.last_call = now
+        if send_red.last_state == red_on:
+            send_red.last_state = red_off
+        else:
+            send_red.last_state = red_on
+        cli.publish(topic, send_red.last_state)
+
+def send_orange(cli, topic):
+    orange_on = "\x00\x01\x00"
+    orange_off = "\x00\x00\x00"
+    if not hasattr(send_orange, "last_state"):
+        send_orange.last_state = 0
+    if not hasattr(send_orange, "last_call"):
+        send_orange.last_call = 0
+
+    now = time.time()
+    if (now - send_orange.last_call) <= 1.2:
+        pass
+    else:
+        send_orange.last_call = now
+        if send_orange.last_state == orange_on:
+            send_orange.last_state = orange_off
+        else:
+            send_orange.last_state = orange_on
+        cli.publish(topic, send_orange.last_state)
+
+
 def publish_mqtt():
     MQTT_BROKER = get_default_gateway_linux()
     MQTT_PORT = 1883
@@ -64,21 +103,12 @@ def publish_mqtt():
             evt_state = st['stateTimeSpeed'][0]['eventState']
 
             if evt_state == 2:
-                red_on= "\x01\x00\x00"
-                red_off = "\x00\x00\x00"
-                cli.publish(topic % (signal_group), red_on)
-                time.sleep(1.2)
-                cli.publish(topic % (signal_group), red_off)
+                send_red(cli, topic % (signal_group))
             elif evt_state == 9:
-                orange_on = "\x00\x01\x00"
-                orange_off = "\x00\x00\x00"
-
-                cli.publish(topic % (signal_group), orange_on)
-                time.sleep(1)
-                cli.publish(topic % (signal_group), orange_off)
+                send_orange(cli, topic % (signal_group))
             elif evt_state != last_evt_state:
                 cli.publish(topic % (signal_group), state_to_str(evt_state))
-                last_evt_state = evt_state
+            last_evt_state = evt_state
 
 if __name__ == '__main__':
     publish_mqtt()
