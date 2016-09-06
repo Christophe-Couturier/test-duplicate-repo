@@ -5,32 +5,53 @@
 		<!-- Message Id for choir protocol -->
 		<pubsub senderid="61" outcam="2" outcamjson="32"
 		        receiverid="62" incam="12" incamjson="22"
-		        mitigation="6" />
+		        mitigation="6" owncamjson="42"/>
 
-		<cache inCacheId="1" VDPCacheId="0"/>
+		<cache inCacheId="1" VDPCacheId="0" stationPropertiesId="3" />
+
+		<recvcontrol dropownmsgs="true"/>
 
 		<!-- specific configuration for cam protocol -->
 		<camparameters protocolversion="1" messageid="2"
 		                vehiclelengthconfind="0" />
 
-		<!-- Temporary values for Vehicle configuration -->
-		<vehicleinfo
-			vehiclelengthval="$vehiclelength"
-			vehiclewidth="$vehiclewidth"
-			exteriorlights="$exteriorlights"
-			vehiclerole="$vehiclerole"
-			embarkationstatus="$embarcationstatus"
-			specialtransportlightbar = "$specialtransportlightbar"
-			specialtransporttype="$specialtransporttype"
-			dangerousgoodsbasic="$dangerousgoodsbasic"
-			roadworkslightbar="$roadworkslightbar"
-			rescuelightbar="$rescuelightbar"
-			emergencylightbar="$emergencylightbar"
-			safetycarlightbar="$safetycarlightbar"
-			roadworkslightbar="$roadworkslightbar"
-			rescuelightbar="$rescuelightbar"
-			emergencylightbar="$emergencylightbar"
-			safetycarlightbar="$safetycarlightbar"
-		/>
+		<!-- generation control parameters -->
+		<sendcontrol generationcontrol="true"
+		             lowfrequencycontrol="true"
+		             mitigationcontrol="true"
+		             genmaxinterval="1000"
+		             genmininterval="100"
+		             genminintervaldcc="100"
+		             genminintervallf="500"
+		             consecutivecam="3"
+		             mitigationinterval="1000" />
+
+		<!--
+			Lifetime is constructed as follow :
+			XXXXXXYY where XXXXXX is the multiplier
+			and YY is the base.
+			For example, 19 = 000100 11
+			It means 4 * 100s. The two last bits can
+			be :
+				00 : 50ms
+				01 : 1s
+				10 : 10s
+				11 : 100s
+
+			For CAM messages the value shall be
+			less than a second.
+		 -->
+		<lifetime value="40"/>
+
+		<securityparameters signmessages="false" securitycontrol="false" aid="36" />
+
+		<!-- ProtectedZone for RSU container. At least one station must be specified when
+		stationType is a RSU (15) -->
+		<protectedzone index="1"/>
+		<!-- type : type of the station. 0 = cenDsrcTolling
+		     latitude : latitude of the station
+		     longitude : longitude of the station -->
+		<zone0 type="0" latitude="0" longitude="0"/>
+
 	</config>
 </configuration>

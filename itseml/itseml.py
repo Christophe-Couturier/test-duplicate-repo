@@ -107,7 +107,6 @@ def generate_configuration(params, envname):
         'gn': 'itsnet.conf',
         'denm': 'mw/config/denservice.xml',
         'position': 'mw/config/positionproviderconfig.xml',
-        'cam': 'mw/config/caconfig.xml',
         'ivi': 'mw/config/iviservice.xml',
     }
 
