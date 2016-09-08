@@ -1,0 +1,13 @@
+[Unit]
+Description=Configure IP addressing for emulated ITS station
+After=network.target
+Requires=eml-netns@%i.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=true
+ExecStart=/usr/bin/eml-ip-setup %i
+
+[Install]
+WantedBy=multi-user.target
+

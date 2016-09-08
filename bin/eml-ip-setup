@@ -1,0 +1,31 @@
+#!/usr/bin/env python2
+# -*- coding: utf-8 -*-
+import netaddr
+import subprocess
+import sys
+
+IP_NETWORK= "10.1.1.0/24"
+SUBNET_PLEN = 30
+
+def _network_conf(envnum):
+    network = netaddr.IPNetwork(IP_NETWORK)
+    subnets = list(network.subnet(SUBNET_PLEN))
+    net = subnets[envnum]
+
+    local = str(netaddr.IPAddress(net.first+1))
+    remt = str(netaddr.IPAddress(net.first+2))
+
+    cmds = []
+    cmds.append("ip netns exec env%d ip a a %s/%d dev eth1" % (envnum, remt, SUBNET_PLEN))
+    cmds.append("ip netns exec env%d ip r a default via %s" % (envnum, local))
+    cmds.append("ip a a %s/%d dev ctl%d" % (local, SUBNET_PLEN, envnum))
+    print("Applying IP configuration for env%d", envnum)
+    for cmd in cmds:
+        out = subprocess.check_call(cmd, shell=True)
+
+if __name__ == '__main__':
+    try:
+	envname = sys.argv[1].replace('env', '')
+        _network_conf(int(envname))
+    except IndexError:
+        print ("Missing parameter (envnum)")

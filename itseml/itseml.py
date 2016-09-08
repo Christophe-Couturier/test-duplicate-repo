@@ -12,7 +12,6 @@ import subprocess
 import sys
 import pprint
 import random
-import netaddr
 import json
 
 from shutil import copyfile
@@ -20,8 +19,6 @@ from string import Template
 
 TMPL_PATH = os.path.join(os.path.dirname(__file__), "templates")
 CONF_PATH = "/var/run/itseml/"
-IP_NETWORK= "10.1.1.0/24"
-SUBNET_PLEN = 30
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -40,7 +37,6 @@ def start_env(params, envname):
     generate_configuration(params, envname)
 
     _service_action('start', envname)
-    _network_conf(int(params['id']))
     if 'intersections' in params.get('map'):
         map_sender(params.get('map'), envname)
         mqtt_notify(envname)
@@ -56,24 +52,8 @@ def _get_if_mac(iface):
     info = fcntl.ioctl(s.fileno(), 0x8927,  struct.pack('256s', iface[:15]))
     return ':'.join(['%02x' % ord(char) for char in info[18:24]])
 
-def _network_conf(envnum):
-    network = netaddr.IPNetwork(IP_NETWORK)
-    subnets = list(network.subnet(SUBNET_PLEN))
-    net = subnets[envnum]
-
-    local = str(netaddr.IPAddress(net.first+1))
-    remt = str(netaddr.IPAddress(net.first+2))
-
-    cmds = []
-    cmds.append("ip netns exec env%d ip a a %s/%d dev eth1" % (envnum, remt, SUBNET_PLEN))
-    cmds.append("ip netns exec env%d ip r a default via %s" % (envnum, local))
-    cmds.append("ip a a %s/%d dev ctl%d" % (local, SUBNET_PLEN, envnum))
-    logging.info("Applying IP configuration")
-    for cmd in cmds:
-        out = subprocess.check_call(cmd, shell=True)
-
 def _service_action(action, envname):
-    svcs = ['eml-netns', 'eml-itsnet', 'eml-mwtun', 'eml-mw-server']
+    svcs = ['eml-netns', 'eml-ip-setup', 'eml-itsnet', 'eml-mwtun', 'eml-mw-server']
 
     services = ' '.join([x + '@%s' % (envname) for x in svcs])
 
