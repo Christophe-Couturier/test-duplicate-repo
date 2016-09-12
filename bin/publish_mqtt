@@ -1,7 +1,6 @@
 #!/usr/bin/python2
 
 import json
-import pprint
 import signal
 import socket
 import struct
@@ -11,6 +10,7 @@ import time
 import websocket
 import mosquitto
 
+from collections import defaultdict
 
 websocket.enableTrace(False)
 ws = websocket.WebSocket()
@@ -101,8 +101,7 @@ def publish_mqtt():
     cli = mosquitto.Mosquitto()
     cli.connect(MQTT_BROKER, MQTT_PORT)
 
-    last_evt_state = ''
-    sig_groups = set()
+    d = defaultdict(lambda: -1, {})
     while True:
         try:
             spatjson = json.loads(ws.recv())
@@ -111,23 +110,22 @@ def publish_mqtt():
             print "Connection error: %s" % e
 
         if _shutdown:
-            for sig in sig_groups:
+            for sig in d.keys():
                 cli.publish(topic % (sig), "\x00\x00\x00")
             return
 
         states = spatjson['spat']['intersections'][0]['states']
         for st in states:
             signal_group = st['signalGroup']
-            sig_groups.add(signal_group)
             evt_state = st['stateTimeSpeed'][0]['eventState']
 
             if evt_state == 2:
                 send_red(cli, topic % (signal_group))
             elif evt_state == 9:
                 send_orange(cli, topic % (signal_group))
-            elif evt_state != last_evt_state:
+            elif evt_state != d[signal_group]:
                 cli.publish(topic % (signal_group), state_to_str(evt_state))
-            last_evt_state = evt_state
+                d[signal_group] = evt_state
 
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, signal_handler)
