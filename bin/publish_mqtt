@@ -2,6 +2,7 @@
 
 import json
 import pprint
+import signal
 import socket
 import struct
 import sys
@@ -14,6 +15,8 @@ import mosquitto
 websocket.enableTrace(False)
 ws = websocket.WebSocket()
 ws.connect("ws://localhost:8080/pubsub/sub/34")
+
+_shutdown = False
 
 def get_default_gateway_linux():
     """Read the default gateway directly from /proc."""
@@ -87,6 +90,10 @@ def send_orange(cli, topic):
         cli.publish(topic, send_orange.last_state)
 
 
+def signal_handler(signal, frame):
+    global _shutdown
+    _shutdown = True
+
 def publish_mqtt():
     MQTT_BROKER = get_default_gateway_linux()
     MQTT_PORT = 1883
@@ -95,11 +102,23 @@ def publish_mqtt():
     cli.connect(MQTT_BROKER, MQTT_PORT)
 
     last_evt_state = ''
+    sig_groups = set()
     while True:
-        spatjson = json.loads(ws.recv())
+        try:
+            spatjson = json.loads(ws.recv())
+        except socket.error, e:
+            spatjson = None
+            print "Connection error: %s" % e
+
+        if _shutdown:
+            for sig in sig_groups:
+                cli.publish(topic % (sig), "\x00\x00\x00")
+            return
+
         states = spatjson['spat']['intersections'][0]['states']
         for st in states:
             signal_group = st['signalGroup']
+            sig_groups.add(signal_group)
             evt_state = st['stateTimeSpeed'][0]['eventState']
 
             if evt_state == 2:
@@ -111,4 +130,6 @@ def publish_mqtt():
             last_evt_state = evt_state
 
 if __name__ == '__main__':
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
     publish_mqtt()
