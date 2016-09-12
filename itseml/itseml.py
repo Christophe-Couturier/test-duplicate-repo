@@ -138,6 +138,10 @@ def generate_configuration(params, envname):
         "interval": params.get('trafficlight').get('interval', 500),
         "tl_conf": '\n'.join(tl_conf_list),
     }
+
+    if tl_params['interval'] == 0:
+        tl_params['interval'] = 500
+
     _process(tl_params, "mw/config/trafficlight.xml")
     logging.info("Creating configuration for mw-server: mw/config/trafficlight.xml")
 
