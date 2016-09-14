@@ -11,7 +11,7 @@ class ItsApplication(WebSocketApplication):
         try:
             response = itseml.process_message(json.loads(message))
         except ValueError, e:
-            response = "400 Invalid JSON"
+            response = """ {"status": false, "message": "Invalid JSON"} """
         self.ws.send(response)
 
 WebSocketServer(

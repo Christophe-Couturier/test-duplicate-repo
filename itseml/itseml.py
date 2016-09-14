@@ -41,7 +41,7 @@ def start_env(params, envname):
         map_sender(params.get('map'), envname)
         mqtt_notify(envname)
     logging.info("Started environment: %s" % (envname))
-    return "200 OK"
+    return """{"status": true}"""
 
 def _mac_to_gn_addr(hw_addr):
     gn_addr = '0000' + hw_addr.replace(':', '')
@@ -67,7 +67,7 @@ def stop_env(envname, envid):
     out = subprocess.check_call("systemctl stop eml-mqtt-notify@%s" % (envname), shell=True)
     _service_action('stop', envname)
     logging.info("Stopped environment: %s" % (envname))
-    return "200 OK"
+    return """{"status": true}"""
 
 def status_env(envname):
     _service_action('is-active -q', envname)
@@ -207,7 +207,7 @@ def process_message(params):
 
     if defaults['action'] == 'stop_all':
         stop_all()
-        return "200 OK"
+        return """{"status": true}"""
 
     envname = "env" + str(defaults["id"])
 
@@ -224,13 +224,16 @@ def process_message(params):
         with open(os.path.join(CONF_PATH, envname, 'request.json'), 'w') as f:
             f.write(defaultsjson)
 
-    response = "304 Not modified"
+    response = """{"status": true}"""
 
     try:
         status_env(envname)
     except subprocess.CalledProcessError, e:
         if defaults['action'] == 'start':
-            response = start_env(defaults, envname)
+            try:
+                response = start_env(defaults, envname)
+            except KeyError, e:
+                response = """ {"status": false, "message": "missing field %s" """ % (repr(e))
         elif defaults['action'] == 'stop':
             logging.info("Environment %s already stopped", envname)
     else:
