@@ -6,6 +6,7 @@ Requires=eml-netns@%i.service eml-itsnet@%i.service
 [Service]
 Type=simple
 ExecStart=/sbin/ip netns exec %i /usr/bin/mwtun -i tun0 -s fe80::1234 -d ff02::1234 -c ff02::5678 -S /var/run/itseml/%i/GN_SAP.sock
+StandardOutput=null
 
 [Install]
 WantedBy=multi-user.target
