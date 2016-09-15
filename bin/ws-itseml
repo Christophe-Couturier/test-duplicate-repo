@@ -14,7 +14,16 @@ class ItsApplication(WebSocketApplication):
             response = """ {"status": false, "message": "Invalid JSON"} """
         self.ws.send(response)
 
+class ItsStatistics(WebSocketApplication):
+    def on_open(self):
+        for msg in itseml.statistics():
+            self.ws.send(msg)
+
+    def on_message(self, message):
+        self.ws.send(next(itseml.statistics()))
+
 WebSocketServer(
     ('::', 8080),
-    Resource({'/': ItsApplication})
+    Resource({'/': ItsApplication,
+              '/status': ItsStatistics})
 ).serve_forever()

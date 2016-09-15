@@ -172,6 +172,80 @@ def _dict_update(source, overrides):
             source[key] = overrides[key]
     return source
 
+def get_envs():
+    out = subprocess.check_output(["ip", "netns"])
+    return out.count("env")
+
+def get_cache_list(cacheid):
+    out = subprocess.check_output(["ip", "netns"])
+    out = out.replace('env', ' ').replace('\n', '').strip()
+
+    s = {}
+    envs = out.split(' ')
+
+    for i in envs:
+        if len(i) > 0:
+            _, rem_ip = _addr_pair(int(i))
+            res = subprocess.check_output("cache_tool -c %d -o 0 -l -d tcp://%s:49154/" % (cacheid, rem_ip), shell=True)
+            d = json.loads(res)
+            s[i] = len(d['objectList'])
+
+    return s
+
+def get_denm():
+    return get_cache_list(2)
+
+def get_ivi():
+    return get_cache_list(3)
+
+def get_map():
+    out = subprocess.check_output(["ip", "netns"])
+    out = out.replace('env', ' ').replace('\n', '').strip()
+
+    s = {}
+    envs = out.split(' ')
+
+    for i in envs:
+        if len(i) > 0:
+            try:
+                out = subprocess.check_call("systemctl is-active -q eml-mapsender@env%s" % (i), shell=True)
+                s[i] = 1
+            except subprocess.CalledProcessError, e:
+                s[i] = 0
+
+    return s
+
+
+def get_spat():
+    out = subprocess.check_output(["ip", "netns"])
+    out = out.replace('env', ' ').replace('\n', '').strip()
+
+    s = {}
+    envs = out.split(' ')
+
+    for i in envs:
+        if len(i) > 0:
+            path = "/var/run/itseml/env%s/mw/config/trafficlight.xml" % (i)
+            with open(path, 'r') as f:
+                for line in f:
+                    if 'index size' in line:
+                        res = line
+            res = res.strip('\t\n></')
+            res = res.replace('"', "").split('=')[1]
+            s[i] = int(res)
+
+    return s
+
+
+def statistics():
+    stats = { "num_stations": get_envs(),
+              "denm_stats": get_denm(),
+              "spat_stats": get_spat(),
+              "map_stats": get_map(),
+              "ivi_stats": get_ivi(), }
+    yield json.dumps(stats)
+
+
 def process_message(params):
     rng = random.SystemRandom()
     defaults = {
