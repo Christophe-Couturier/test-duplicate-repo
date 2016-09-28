@@ -13,6 +13,9 @@
                 <cache vdpcacheid="0"
                        vdpobjectid="1" />
 
+                <!-- Filter incoming updates -->
+                <filter mode="2" />
+
                 <!-- Configuration for static provider-->
                 <!-- Also possible to specify errors
                                 posmajoraxisdirection="0"
