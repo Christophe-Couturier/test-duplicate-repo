@@ -4,6 +4,7 @@ import collections
 import distutils.dir_util
 import fcntl
 import logging
+import netaddr
 import os
 import os.path
 import socket
@@ -22,6 +23,9 @@ CONF_PATH = "/var/run/itseml/"
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
+
+IP_NETWORK= "10.1.1.0/24"
+SUBNET_PLEN = 30
 
 # create formatter
 formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
@@ -46,6 +50,17 @@ def start_env(params, envname):
 def _mac_to_gn_addr(hw_addr):
     gn_addr = '0000' + hw_addr.replace(':', '')
     return ':'.join([gn_addr[i:i+4] for i in range(0, len(gn_addr), 4)])
+
+def _addr_pair(envnum):
+    """Return a tuple with local, remote IP addresses"""
+    network = netaddr.IPNetwork(IP_NETWORK)
+    subnets = list(network.subnet(SUBNET_PLEN))
+    net = subnets[envnum]
+
+    local = str(netaddr.IPAddress(net.first+1))
+    remote = str(netaddr.IPAddress(net.first+2))
+
+    return local, remote
 
 def _get_if_mac(iface):
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

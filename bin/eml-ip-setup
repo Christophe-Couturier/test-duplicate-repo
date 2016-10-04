@@ -3,23 +3,16 @@
 import netaddr
 import subprocess
 import sys
-
-IP_NETWORK= "10.1.1.0/24"
-SUBNET_PLEN = 30
+from itseml import _addr_pair, SUBNET_PLEN
 
 def _network_conf(envnum):
-    network = netaddr.IPNetwork(IP_NETWORK)
-    subnets = list(network.subnet(SUBNET_PLEN))
-    net = subnets[envnum]
-
-    local = str(netaddr.IPAddress(net.first+1))
-    remt = str(netaddr.IPAddress(net.first+2))
+    local, remt = _addr_pair(envnum)
 
     cmds = []
     cmds.append("ip netns exec env%d ip a a %s/%d dev eth1" % (envnum, remt, SUBNET_PLEN))
     cmds.append("ip netns exec env%d ip r a default via %s" % (envnum, local))
     cmds.append("ip a a %s/%d dev ctl%d" % (local, SUBNET_PLEN, envnum))
-    print("Applying IP configuration for env%d", envnum)
+    print("Applying IP configuration for env%d" % (envnum))
     for cmd in cmds:
         out = subprocess.check_call(cmd, shell=True)
 
