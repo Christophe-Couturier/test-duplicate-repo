@@ -260,9 +260,26 @@ def get_spat():
 
     return s
 
+def get_cam():
+    out = subprocess.check_output(["ip", "netns"])
+    out = out.replace('env', ' ').replace('\n', '').strip()
+
+    s = {}
+    envs = out.split(' ')
+
+    for i in envs:
+        if len(i) > 0:
+            path = "/var/run/itseml/env%s/mw/config/caconfig.xml" % (i)
+            if os.path.isfile(path):
+                s[i] = 'true'
+            else:
+                s[i] = 'false'
+    return s
+
 
 def statistics():
     stats = { "num_stations": get_envs(),
+              "cam_stats": get_cam(),
               "denm_stats": get_denm(),
               "spat_stats": get_spat(),
               "map_stats": get_map(),
