@@ -90,6 +90,7 @@ def status_env(envname):
 def generate_configuration(params, envname):
     # Copy files that don't need modifications
     filelist = ['log4j.properties', 'config/spatconfig.xml',
+            'config/vdpconfig.xml',
             'config/v2xconfig.xml', 'config/ldmservice.xml']
 
     src = [os.path.join(TMPL_PATH, "mw", x) for x in filelist]
@@ -103,10 +104,13 @@ def generate_configuration(params, envname):
         'denm': 'mw/config/denservice.xml',
         'position': 'mw/config/positionproviderconfig.xml',
         'ivi': 'mw/config/iviservice.xml',
+        'cam': 'mw/config/caconfig.xml',
     }
 
     params['gn']['lat'] =  params['position']['lat']
     params['gn']['lon'] =  params['position']['lon']
+    params['cam']['lat'] =  params['position']['lat']
+    params['cam']['lon'] =  params['position']['lon']
 
     def _process(field, filename):
         # Replace True with "true" and False with "false"
@@ -118,6 +122,11 @@ def generate_configuration(params, envname):
             open(os.path.join(CONF_PATH, envname, filename), 'w') as dst:
             tpl = Template(f.read())
             dst.write(tpl.substitute(field))
+
+    # Enable CA Protected Zone
+    if params.get("station_type") == 15:
+        params['cam']['idx'] = 1
+
 
     for k, v in _fields.iteritems():
         if k in params:
@@ -286,6 +295,10 @@ def process_message(params):
             "msgID": 18,
             "msgSubID": 1,
             "msgIssueRevision": 1,
+        },
+        "cam": {
+            "enable": False,
+            "idx": 0,
         },
     }
 

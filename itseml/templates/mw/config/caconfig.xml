@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <configuration>
-	<service start="false" instance="0">CaService</service>
+	<service start="$enable" instance="0">CaService</service>
 	<config>
 		<!-- Message Id for choir protocol -->
 		<pubsub senderid="61" outcam="2" outcamjson="32"
@@ -47,11 +47,11 @@
 
 		<!-- ProtectedZone for RSU container. At least one station must be specified when
 		stationType is a RSU (15) -->
-		<protectedzone index="1"/>
+		<protectedzone index="$idx"/>
 		<!-- type : type of the station. 0 = cenDsrcTolling
 		     latitude : latitude of the station
 		     longitude : longitude of the station -->
-		<zone0 type="0" latitude="0" longitude="0"/>
+		<zone0 type="0" latitude="$lat" longitude="$lon"/>
 
 	</config>
 </configuration>
