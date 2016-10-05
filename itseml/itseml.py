@@ -256,7 +256,10 @@ def get_spat():
                         res = line
             res = res.strip('\t\n></')
             res = res.replace('"', "").split('=')[1]
-            s[i] = int(res)
+            if int(res) == 0:
+                s[i] = 0
+            else:
+                s[i] = 1
 
     return s
 
