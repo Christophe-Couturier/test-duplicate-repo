@@ -17,7 +17,7 @@ A sample JSON to start a station:
   "stationid": 1234      # StationID used in the mw-server configuration.
   "gn": {
      "gn_addr": "0000:aabb:ccdd:eeff" # GeoNetworking Address
-     "geobc_fwd_alg": 0  # Set to 4 to disable GeoBroadcast forwarding
+     "geobc_fwd_alg": 0  # Set to 4 to disable GeoBroadcast line forwarding
   },
   "denm": {
      "forwarding": true  # Set to false to disable DENM forwarding
@@ -28,13 +28,52 @@ A sample JSON to start a station:
      "lat": "48.837590",
      "lon": "2.101363"
   }
+  "ivi": {
+     "autoupdate": false
+  },
+  "trafficlight": {
+      "durations": [
+          [
+              5,
+              5,
+              5,
+              5,
+              5
+          ]
+      ],
+      "interval": 1500,
+      "states": [
+          [
+              7,
+              3,
+              4,
+              5,
+              9
+          ]
+      ]
+  }
+  "map":{
+    "interval":2000,
+    [...]
+  }
 }
 
-The 'gn', 'stationid', and 'denm' objets are optional.
+The following fiels are optional:
+  - gn
+  - stationid
+  - denm
+  - ivi
+  - trafficlight
+  - map
 If 'gn' is not set, a random GN address is used, and the default GeoBC
 forwarding algorithm is used.
 If 'stationid' is not set, a random ID is generated for the station.
 If 'denm' is not set, the values displayed above are used.
+If 'ivi' is not set, the values displayed above are used.
+If 'trafficlight' is not set, the emulated station will not emit any SPAT
+If 'map' is not set, the emulated station will not emit any MAP
+
+
 
 To stop the station:
 {
@@ -48,12 +87,17 @@ cli-itseml is provided as a testing aid. The usage is: cli-itseml < file.json
 ws-itseml listens on port 8080, although in practice it sits behind a proxy.
 
 The provided nginx configuration (doc/sample.nginx.conf) is set to proxy
-two locations:
+several locations:
  - /ctl
- - /env/<envid>/pubsub/pub/<msgid>/<appid>
+ - /status
+ - /env/<envid>/pubsub/pub/<msgid>
+ - /env/<envid>/pubsub/sub/<msgid>
+ - /env/<envid>/cache/get/<cacheid>/<objectid>
+ - /env/<envid>/cache/set/<cacheid>/<objectid>
+ - /env/<envid>/cache/register/<cacheid>/<objectid>
 
-The first proxies requests to ws-itseml.
-The second is used to communication with the middleware WebSocket API of each
+The first two requests are proxied to ws-itseml.
+The others are used to communicate with the middleware WebSocket API of each
 station. To achieve this, nginx must be compiled with an embedded Lua
 interpreter (on debian, use the nginx-extras package).
 
@@ -84,7 +128,6 @@ An ITS stack is currently defined as:
  - itsnet
  - mwtun
  - mw-server
- - gpsd
 
 Each ITS stack runs in a network namespace named:
  - envX
@@ -116,6 +159,10 @@ is:
         The network namespace is setup via the appropriate script (installed
   as /usr/bin/setup_netns). The script is called by the eml-netns@.service unit.
 
+ - eml-ip-setup:
+        Script to apply IP configuration after the network namespace has been
+  created. The script is called by the eml-ip-setup@.service unit.
+
  - itsnet:
         The GeoNetworking daemon is started by the eml-itsnet@.service unit.
 
@@ -123,31 +170,9 @@ is:
         Interface betwen itsnet and mw-server. Started by the
 eml-mwtun@service unit.
 
- - gps:
-        The gpsd daemon fetches the position from the middleware. Since the
-  middleware does not serve data directly over TCP, a proxy is used. The
-  relevant units are:
-           * eml-gpsd@.service
-           * eml-gpsfwd@.service
-           * eml-gpspipe@.service
-
-        The eml-gpspipe service is simply a gpspipe process that runs for 3
-  seconds and then quits before being restarted again by systemd. It is not
-  needed per se but it helps mitigate a race condition:
-          - gpsd is started
-          - itsnet is started, attempts to connect to gpsd
-          - upon receiving the connection, gpsd "activates" the upstream, i.e.
-            the connection to the proxy.
-          - the proxy isn't initialized yet, so gpsd fails.
-
-        At this point, gpsd keeps the client connections open, but does not
-  retry the upstream. In other words, itsnet is connected but does not receive
-  any data.  Attempts to reconnect only happen when a new client connects,
-  which is the reason why the gpspipe service exists.
-
  - mw-server:
         The middleware server is started the eml-mw-server@.service unit.
 
  - ws-itseml:
-        A simple Python wrapper using gevent-websocket to convert received
-  JSON data to a dict, and feed it to the itseml module.
+        A simple Python wrapper using gevent-websocket to process the received
+  JSON data using the itseml module.
