@@ -3,6 +3,7 @@
 import netaddr
 import subprocess
 import sys
+import time
 from itseml import _addr_pair, SUBNET_PLEN
 
 def _network_conf(envnum):
@@ -11,8 +12,9 @@ def _network_conf(envnum):
     cmds = []
     cmds.append("ip netns exec env%d ip a a %s/%d dev eth1" % (envnum, remt, SUBNET_PLEN))
     cmds.append("ip netns exec env%d ip r a default via %s" % (envnum, local))
+    time.sleep(1)
     cmds.append("ip a a %s/%d dev ctl%d" % (local, SUBNET_PLEN, envnum))
-    print("Applying IP configuration for env%d" % (envnum))
+    print "Applying IP configuration for env%d" % (envnum)
     for cmd in cmds:
         out = subprocess.check_call(cmd, shell=True)
 
