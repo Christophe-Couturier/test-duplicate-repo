@@ -6,7 +6,7 @@ Requires=eml-netns@%i.service eml-itsnet@%i.service eml-mwtun@%i.service
 [Service]
 Type=simple
 WorkingDirectory=/var/run/itseml/%i/mw
-ExecStart=/sbin/ip netns exec %i /usr/bin/java -jar /opt/mw-server/middleware-server.jar
+ExecStart=/sbin/ip netns exec %i /usr/bin/java -jar /usr/bin/middleware-server.jar
 
 [Install]
 WantedBy=multi-user.target
