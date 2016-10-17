@@ -44,6 +44,9 @@ def start_env(params, envname):
     if 'intersections' in params.get('map'):
         map_sender(params.get('map'), envname)
         mqtt_notify(envname)
+    if params.get('cam').get('enable'):
+        logging.info("Starting eml-camsender@%s service" % (envname))
+        out = subprocess.check_call("systemctl start eml-camsender@%s" % (envname), shell=True)
     logging.info("Started environment: %s" % (envname))
     return """{"status": true}"""
 
@@ -272,11 +275,12 @@ def get_cam():
 
     for i in envs:
         if len(i) > 0:
+            s[i] = 0
             path = "/var/run/itseml/env%s/mw/config/caconfig.xml" % (i)
-            if os.path.isfile(path):
-                s[i] = 'true'
-            else:
-                s[i] = 'false'
+            with open(path, 'r') as f:
+                for line in f:
+                    if 'service start="true"' in line:
+                        s[i] = 1
     return s
 
 
@@ -323,6 +327,8 @@ def process_message(params):
     }
 
 
+    if params.get('cam'):
+        params["cam"]["enable"] = True
     defaults = _dict_update(defaults, params)
 
     logging.debug("Processing received JSON:\n%s", pprint.pformat(defaults))
