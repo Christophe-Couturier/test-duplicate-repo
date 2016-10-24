@@ -2,11 +2,13 @@
 <configuration>
 	<service start="true" instance="0">LdmService</service>
 	<config>
-		<cache ldmCamCacheId="10" VDPCacheId="0"/>
+		<pubsub incam="32" camReceiverId="90" indenm="45" denmReceiverId="91"/>
+		<cache ldmCamCacheId="10" ldmeventcacheid="11" VDPCacheId="0"/>
+
 		<!-- max distance filter in meter -->
 		<station maxdistance="1000"/>
 
-		<pubsub incam="32" camReceiverId="90" indenm="0" denmReceiverId="91"/>
 		<camrevelance frequency="100" timeout="2000"/>
+		<denmrevelance frequency="500"/>
 	</config>
 </configuration>
