@@ -44,7 +44,7 @@ def start_env(params, envname):
     if 'intersections' in params.get('map'):
         map_sender(params.get('map'), envname)
         mqtt_notify(envname)
-    if params.get('cam').get('enable') == True:
+    if params.get('cam').get('enable') == 'true':
         logging.info("Starting eml-camsender@%s service" % (envname))
         out = subprocess.check_call("systemctl start eml-camsender@%s" % (envname), shell=True)
     logging.info("Started environment: %s" % (envname))
