@@ -60,7 +60,7 @@
 			enabled="false" />
 		<var48 name="dangerousgoods" type="integer" value="-3" enabled="false" />
 		<var49 name="transporttype" type="integer" value="2" enabled="false" />
-		<var50 name="highbeamheadlight" type="bool" value="true"
+		<var50 name="highbeamheadlight" type="bool" value="false"
 			enabled="true" />
 		<var51 name="curvatureconfidence" type="integer" value="0"
 			enabled="false" />
