@@ -1,0 +1,14 @@
+[Unit]
+Description=Serve GPS information obtained from YoGoKo Middleware
+After=eml-netns@%i.service eml-mw-server@%i.service
+Requires=eml-netns@%i.service eml-mw-server@%i.service
+
+[Service]
+StandardOutput=null
+ExecStart=/sbin/ip netns exec %i /usr/bin/eml-gpsfwd
+Restart=always
+RestartSec=1
+StartLimitInterval=0
+
+[Install]
+WantedBy=multi-user.target

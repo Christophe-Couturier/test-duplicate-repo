@@ -47,6 +47,8 @@ def start_env(params, envname):
     if params.get('cam').get('enable') == 'true':
         logging.info("Starting eml-camsender@%s service" % (envname))
         out = subprocess.check_call("systemctl start eml-camsender@%s" % (envname), shell=True)
+        logging.info("Starting eml-gpsfwd@%s service" % (envname))
+        out = subprocess.check_call("systemctl start eml-gpsfwd@%s" % (envname), shell=True)
     logging.info("Started environment: %s" % (envname))
     return """{"status": true}"""
 
@@ -114,6 +116,12 @@ def generate_configuration(params, envname):
     params['gn']['lon'] =  params['position']['lon']
     params['cam']['lat'] =  params['position']['lat']
     params['cam']['lon'] =  params['position']['lon']
+
+    if params.get('cam').get('enable'):
+        params['gn']['type'] = "gpsd"
+    else:
+        params['gn']['type'] = "static"
+
 
     def _process(field, filename):
         # Replace True with "true" and False with "false"
