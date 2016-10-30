@@ -4,10 +4,9 @@ After=eml-netns@%i.service eml-mw-server@%i.service
 Requires=eml-netns@%i.service eml-mw-server@%i.service
 
 [Service]
-ExecStart=/sbin/ip netns exec %i /usr/bin/java -jar /usr/bin/camdeamon.jar  /var/run/itseml/%i/request.json ws://localhost:8080/cache/set/0/1/3333 -overrideTimestamp
-Restart=always
-RestartSec=1
-StartLimitInterval=0
+ExecStart=/sbin/ip netns exec %i /usr/bin/java -jar /usr/bin/camdeamon.jar  /var/run/itseml/%i/request.json ws://localhost:8080/cache/set/0/1/3333
+RemainAfterExit=yes
+
 
 [Install]
 WantedBy=multi-user.target
