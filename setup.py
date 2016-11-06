@@ -1,9 +1,10 @@
 #!/usr/bin/env python2
 
 from distutils.core import setup
+from datetime import datetime
 
 setup(name='itseml',
-      version='0.1',
+      version='%s' % (datetime.utcnow().strftime('%Y.%m.%d')),
       description='ITS emulator helper',
       author='Marios Makassikis',
       author_email='marios.makassikis@yogoko.fr',
