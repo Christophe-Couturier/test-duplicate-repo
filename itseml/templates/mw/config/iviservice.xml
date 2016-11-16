@@ -4,7 +4,7 @@
 	<config>
 		<!-- Application Id for choir protocol -->
 		<pubsub senderid="107" outivi="7" triggerivi="27" handlerid="97"
-		        receiverid="107" inivi="17" injsonivi="37" outjsonivi="47" answerivi="57"/>
+		        receiverid="108" inivi="17" injsonivi="37" outjsonivi="47" answerivi="57"/>
 
 		<!-- Enable autoUpdate of IVI -->
 		<autoupdate enabled="$autoupdate"/>
