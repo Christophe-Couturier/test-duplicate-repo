@@ -151,20 +151,6 @@ def generate_configuration(params, envname):
 
     params.get('cam')['protected_zones_conf'] = '\n'.join(protected_zones_conf)
 
-    # Generate configuration files
-    for k, v in _fields.iteritems():
-        if k in params:
-            logging.info("Creating configuration for %s: %s", k, v)
-            _process(params[k], v)
-
-    # Generate choirconf.xml
-    tpl_params = {
-        "station_id": params.get("stationid"),
-        "station_type": params.get("station_type"),
-    }
-    logging.info("Creating configuration for mw-server: mw/choirconf.xml")
-    _process(tpl_params, "mw/choirconf.xml")
-
     # Generate trafficlight.xml
     num_tl = len(params.get('trafficlight').get('states'))
     states = params.get('trafficlight').get('states')
@@ -190,8 +176,23 @@ def generate_configuration(params, envname):
     if tl_params['interval'] == 0:
         tl_params['interval'] = 500
 
-    _process(tl_params, "mw/config/trafficlight.xml")
-    logging.info("Creating configuration for mw-server: mw/config/trafficlight.xml")
+    _fields['trafficlight'] = "mw/config/trafficlight.xml"
+    params['trafficlight'] = tl_params
+
+    # choirconf.xml parameters
+    mw_params = {
+        "station_id": params.get("stationid"),
+        "station_type": params.get("station_type"),
+    }
+
+    _fields['mw'] = "mw/choirconf.xml"
+    params['mw'] = mw_params
+
+    # Generate configuration files
+    for k, v in _fields.iteritems():
+        if k in params:
+            logging.info("Creating configuration for %s: %s", k, v)
+            _process(params[k], v)
 
 def mqtt_notify(envname):
     logging.info("Starting eml-mqtt-notify@%s service" % (envname))
