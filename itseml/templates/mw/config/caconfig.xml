@@ -51,7 +51,7 @@
 		<!-- type : type of the station. 0 = cenDsrcTolling
 		     latitude : latitude of the station
 		     longitude : longitude of the station -->
-		<zone0 type="0" latitude="$lat" longitude="$lon"/>
-
+		<!-- <zone0 type="0" latitude="" longitude=""/> -->
+$protected_zones_conf
 	</config>
 </configuration>

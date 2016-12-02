@@ -115,8 +115,6 @@ def generate_configuration(params, envname):
 
     params['gn']['lat'] =  params['position']['lat']
     params['gn']['lon'] =  params['position']['lon']
-    params['cam']['lat'] =  params['position']['lat']
-    params['cam']['lon'] =  params['position']['lon']
 
     if params.get('cam').get('enable'):
         params['gn']['type'] = "gpsd"
@@ -136,10 +134,23 @@ def generate_configuration(params, envname):
             dst.write(tpl.substitute(field))
 
     # Enable CA Protected Zone
-    if params.get("station_type") == 15:
+    params['cam']['idx'] = len(params.get('cam').get('protectedzones'))
+
+    if params['cam']['idx'] == 0 and params.get("station_type") == 15:
+        selfzone = { "type": 0, "latitude": params['position']['lat'],
+                 "longitude": params['position']['lon'] }
+        params.get('cam').get('protectedzones').append(selfzone)
         params['cam']['idx'] = 1
 
+    protected_zones_conf = []
+    for idx, zone in enumerate(params.get('cam').get('protectedzones')):
+        l = ["""%s="%s" """ % (k, v) for k,v in zone.items()]
+        tmpl = """\t\t<zone%d %s/>""" % (idx, ''.join(l))
+        protected_zones_conf.append(tmpl)
 
+    params.get('cam')['protected_zones_conf'] = '\n'.join(protected_zones_conf)
+
+    # Generate configuration files
     for k, v in _fields.iteritems():
         if k in params:
             logging.info("Creating configuration for %s: %s", k, v)
@@ -332,6 +343,7 @@ def process_message(params):
         "cam": {
             "enable": False,
             "idx": 0,
+            "protectedzones": [],
         },
     }
 
