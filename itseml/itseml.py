@@ -7,6 +7,7 @@ import logging
 import netaddr
 import os
 import os.path
+import shlex
 import socket
 import struct
 import subprocess
@@ -47,9 +48,9 @@ def start_env(params, envname):
         mqtt_notify(envname)
     if params.get('cam').get('enable') == 'true':
         logging.info("Starting eml-camsender@%s service" % (envname))
-        out = subprocess.check_call("systemctl start eml-camsender@%s" % (envname), shell=True)
+        out = subprocess.check_call(shlex.split("systemctl start eml-camsender@%s" % (envname)))
         logging.info("Starting eml-gpsfwd@%s service" % (envname))
-        out = subprocess.check_call("systemctl start eml-gpsfwd@%s" % (envname), shell=True)
+        out = subprocess.check_call(shlex.split("systemctl start eml-gpsfwd@%s" % (envname)))
     logging.info("Started environment: %s" % (envname))
     return """{"status": true}"""
 
@@ -79,13 +80,13 @@ def _service_action(action, envname):
     services = ' '.join([x + '@%s' % (envname) for x in svcs])
 
     logging.info("{0} services: {1}".format(action, services))
-    subprocess.check_call("systemctl %s %s" % (action, services), shell=True)
+    subprocess.check_call(shlex.split("systemctl %s %s" % (action, services)))
 
 def stop_env(envname, envid):
     logging.info("Stopping eml-mapsender@%s service" % (envname))
-    out = subprocess.check_call("systemctl stop eml-mapsender@%s" % (envname), shell=True)
+    out = subprocess.check_call(shlex.split("systemctl stop eml-mapsender@%s" % (envname)))
     logging.info("Stopping eml-mqtt-notify@%s service" % (envname))
-    out = subprocess.check_call("systemctl stop eml-mqtt-notify@%s" % (envname), shell=True)
+    out = subprocess.check_call(shlex.split("systemctl stop eml-mqtt-notify@%s" % (envname)))
     _service_action('stop', envname)
     logging.info("Stopped environment: %s" % (envname))
     return """{"status": true}"""
@@ -194,14 +195,14 @@ def generate_configuration(params, envname):
 
 def mqtt_notify(envname):
     logging.info("Starting eml-mqtt-notify@%s service" % (envname))
-    out = subprocess.check_call("systemctl start eml-mqtt-notify@%s" % (envname), shell=True)
+    out = subprocess.check_call(shlex.split("systemctl start eml-mqtt-notify@%s" % (envname)))
 
 def map_sender(params, envname):
     mapjson = json.dumps({'map':params})
     with open(os.path.join(CONF_PATH, envname, 'map.json'), 'w') as f:
         f.write(mapjson)
     logging.info("Starting eml-mapsender@%s service" % (envname))
-    out = subprocess.check_call("systemctl start eml-mapsender@%s" % (envname), shell=True)
+    out = subprocess.check_call(shlex.split("systemctl start eml-mapsender@%s" % (envname)))
 
 def stop_all():
     _service_action("stop", "*");
@@ -234,7 +235,7 @@ def get_cache_list(cacheid):
         if len(i) > 0:
             _, rem_ip = _addr_pair(int(i))
             appid = rng.randint(2**16, 2**30)
-            res = subprocess.check_output("mwcache -a %d -c %d -o 0 -l -d tcp://%s:49154/" % (appid, cacheid, rem_ip), shell=True)
+            res = subprocess.check_output(shlex.split("mwcache -a %d -c %d -o 0 -l -d tcp://%s:49154/" % (appid, cacheid, rem_ip)))
             d = json.loads(res)
             s[i] = len(d['objectList'])
 
@@ -256,7 +257,7 @@ def get_map():
     for i in envs:
         if len(i) > 0:
             try:
-                out = subprocess.check_call("systemctl is-active -q eml-mapsender@env%s" % (i), shell=True)
+                out = subprocess.check_call(shlex.split("systemctl is-active -q eml-mapsender@env%s" % (i)))
                 s[i] = 1
             except subprocess.CalledProcessError, e:
                 s[i] = 0

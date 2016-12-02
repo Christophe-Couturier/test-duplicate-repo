@@ -4,7 +4,6 @@ import json
 import signal
 import socket
 import struct
-import sys
 import time
 
 import websocket
