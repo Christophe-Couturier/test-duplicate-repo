@@ -26,6 +26,7 @@ logger.setLevel(logging.DEBUG)
 
 IP_NETWORK= "10.1.1.0/24"
 SUBNET_PLEN = 30
+rng = random.SystemRandom()
 
 # create formatter
 formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
@@ -221,7 +222,8 @@ def get_cache_list(cacheid):
     for i in envs:
         if len(i) > 0:
             _, rem_ip = _addr_pair(int(i))
-            res = subprocess.check_output("cache_tool -c %d -o 0 -l -d tcp://%s:49154/" % (cacheid, rem_ip), shell=True)
+            appid = rng.randint(2**16, 2**30)
+            res = subprocess.check_output("mwcache -a %d -c %d -o 0 -l -d tcp://%s:49154/" % (appid, cacheid, rem_ip), shell=True)
             d = json.loads(res)
             s[i] = len(d['objectList'])
 
@@ -303,7 +305,6 @@ def statistics():
 
 
 def process_message(params):
-    rng = random.SystemRandom()
     defaults = {
         "stationid": rng.randint(1, 65535),
         "station_type": 15,
