@@ -1,0 +1,7 @@
+#!/bin/bash
+
+while read pid; do
+        kill -15 ${pid}
+done < /tmp/tshark_${USER}.pid
+
+rm -f /tmp/tshark_${USER}.pid

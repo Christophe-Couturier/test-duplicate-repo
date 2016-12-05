@@ -1,0 +1,15 @@
+#!/bin/bash
+
+
+OUTDIR="${HOME}/captures"
+mkdir -p ${OUTDIR}
+datetag=$(date +"%Y.%d.%m_%H_%M_%S")
+custom=${1}
+
+tshark -ni v2xbr -w "${OUTDIR}/capture_${datetag}${custom}.pcap" 2>/dev/null &
+
+echo $! >> /tmp/tshark_${USER}.pid
+
+disown
+
+echo "Capture started"
