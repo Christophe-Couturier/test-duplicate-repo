@@ -306,6 +306,19 @@ def get_cam():
                         s[i] = 1
     return s
 
+def get_capture():
+    svcs = ['itssnif', 'gn-itsnet', 'gn-mwtun', 'mw-server']
+
+    services = ' '.join(svcs)
+
+    logging.info("Checking if capture services are running: {0}".format(services))
+    try:
+        subprocess.check_call(shlex.split("systemctl is-active -q %s" % (services)))
+    except (subprocess.CalledProcessError) as e:
+        return False
+
+    return True
+
 
 def statistics():
     stats = { "num_stations": get_envs(),
@@ -313,7 +326,8 @@ def statistics():
               "denm_stats": get_denm(),
               "spat_stats": get_spat(),
               "map_stats": get_map(),
-              "ivi_stats": get_ivi(), }
+              "ivi_stats": get_ivi(),
+              "capture_enabled": get_capture(), }
     yield json.dumps(stats)
 
 
