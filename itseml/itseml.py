@@ -43,14 +43,6 @@ def start_env(params, envname):
     generate_configuration(params, envname)
 
     _service_action('start', envname)
-    if 'intersections' in params.get('map'):
-        map_sender(params.get('map'), envname)
-        mqtt_notify(envname)
-    if params.get('cam').get('enable') == 'true':
-        logging.info("Starting eml-camsender@%s service" % (envname))
-        out = subprocess.check_call(shlex.split("systemctl start eml-camsender@%s" % (envname)))
-        logging.info("Starting eml-gpsfwd@%s service" % (envname))
-        out = subprocess.check_call(shlex.split("systemctl start eml-gpsfwd@%s" % (envname)))
     logging.info("Started environment: %s" % (envname))
     return """{"status": true}"""
 
@@ -75,7 +67,7 @@ def _get_if_mac(iface):
     return ':'.join(['%02x' % ord(char) for char in info[18:24]])
 
 def _service_action(action, envname):
-    svcs = ['eml-netns', 'eml-ip-setup', 'eml-itsnet', 'eml-mwtun', 'eml-mw-server']
+    svcs = ['eml-netns', 'eml-ip-setup', 'eml-itsnet', 'eml-mw-server']
 
     services = ' '.join([x + '@%s' % (envname) for x in svcs])
 
@@ -83,10 +75,6 @@ def _service_action(action, envname):
     subprocess.check_call(shlex.split("systemctl %s %s" % (action, services)))
 
 def stop_env(envname, envid):
-    logging.info("Stopping eml-mapsender@%s service" % (envname))
-    out = subprocess.check_call(shlex.split("systemctl stop eml-mapsender@%s" % (envname)))
-    logging.info("Stopping eml-mqtt-notify@%s service" % (envname))
-    out = subprocess.check_call(shlex.split("systemctl stop eml-mqtt-notify@%s" % (envname)))
     _service_action('stop', envname)
     logging.info("Stopped environment: %s" % (envname))
     return """{"status": true}"""
@@ -193,17 +181,6 @@ def generate_configuration(params, envname):
         if k in params:
             logging.info("Creating configuration for %s: %s", k, v)
             _process(params[k], v)
-
-def mqtt_notify(envname):
-    logging.info("Starting eml-mqtt-notify@%s service" % (envname))
-    out = subprocess.check_call(shlex.split("systemctl start eml-mqtt-notify@%s" % (envname)))
-
-def map_sender(params, envname):
-    mapjson = json.dumps({'map':params})
-    with open(os.path.join(CONF_PATH, envname, 'map.json'), 'w') as f:
-        f.write(mapjson)
-    logging.info("Starting eml-mapsender@%s service" % (envname))
-    out = subprocess.check_call(shlex.split("systemctl start eml-mapsender@%s" % (envname)))
 
 def stop_all():
     _service_action("stop", "*");
