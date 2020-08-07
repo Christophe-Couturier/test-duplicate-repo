@@ -18,6 +18,3 @@ echo $MAC_ADDR
     ip netns exec ${NETNS} ip l set dev eth0 address ${MAC_ADDR}
     ip netns exec ${NETNS} ip l set dev eth0 up
 fi
-
-sed -i -e "s,^#SAPSocket.*,SAPSocket = /var/run/itseml/${NETNS}/GN_SAP.sock," \
-       /var/run/itseml/${NETNS}/itsnet.conf
