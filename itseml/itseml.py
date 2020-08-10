@@ -15,6 +15,7 @@ import sys
 import pprint
 import random
 import json
+import time
 
 from shutil import copyfile
 from string import Template
@@ -43,6 +44,8 @@ def start_env(params, envname):
     generate_configuration(params, envname)
 
     _service_action('start', envname)
+    time.sleep(5)
+    push_MIB_configuration(params, envname)
     logging.info("Started environment: %s" % (envname))
     return """{"status": true}"""
 
@@ -83,33 +86,22 @@ def status_env(envname):
     _service_action('is-active -q', envname)
 
 def generate_configuration(params, envname):
-    # Copy files that don't need modifications
-    filelist = ['log4j.properties', 'config/spatconfig.xml',
-            'config/vdpconfig.xml',
-            'config/v2xconfig.xml', 'config/ldmservice.xml']
+    # Copy log4j.properties, yogoko-middleware.license & choirconf.xml
+    filelist = [
+        'log4j.properties',
+        'yogoko-middleware.license',
+        'choirconf.xml'
+    ]
 
     src = [os.path.join(TMPL_PATH, "mw", x) for x in filelist]
     dst = [os.path.join("/var/run/itseml/%s/mw" % (envname), x) for x in filelist]
     for i,_ in enumerate(src):
         copyfile(src[i], dst[i])
 
-    # Generate configuration files from JSON
+    # Generate configuration file from JSON
     _fields = {
-        'gn': 'itsnet.conf',
-        'denm': 'mw/config/denservice.xml',
-        'position': 'mw/config/positionproviderconfig.xml',
-        'ivi': 'mw/config/iviservice.xml',
-        'cam': 'mw/config/caconfig.xml',
+        'itsnet': 'itsnet.conf'
     }
-
-    params['gn']['lat'] =  params['position']['lat']
-    params['gn']['lon'] =  params['position']['lon']
-
-    if params.get('cam').get('enable'):
-        params['gn']['type'] = "gpsd"
-    else:
-        params['gn']['type'] = "static"
-
 
     def _process(field, filename):
         # Replace True with "true" and False with "false"
@@ -122,65 +114,30 @@ def generate_configuration(params, envname):
             tpl = Template(f.read())
             dst.write(tpl.substitute(field))
 
-    # Enable CA Protected Zone
-    params['cam']['idx'] = len(params.get('cam').get('protectedzones'))
-
-    if params['cam']['idx'] == 0 and params.get("station_type") == 15:
-        selfzone = { "type": 0, "latitude": params['position']['lat'],
-                 "longitude": params['position']['lon'] }
-        params.get('cam').get('protectedzones').append(selfzone)
-        params['cam']['idx'] = 1
-
-    protected_zones_conf = []
-    for idx, zone in enumerate(params.get('cam').get('protectedzones')):
-        l = ["""%s="%s" """ % (k, v) for k,v in zone.items()]
-        tmpl = """\t\t<zone%d %s/>""" % (idx, ''.join(l))
-        protected_zones_conf.append(tmpl)
-
-    params.get('cam')['protected_zones_conf'] = '\n'.join(protected_zones_conf)
-
-    # Generate trafficlight.xml
-    num_tl = len(params.get('trafficlight').get('states'))
-    states = params.get('trafficlight').get('states')
-    durations = params.get('trafficlight').get('durations')
-
-    tl_conf_list = []
-    for tl, (state, duration) in enumerate(zip(states, durations)):
-        tl_line = ""
-        st_dur_list = [(x,y) for x,y in zip(state, duration) if y != 0 ]
-        for i, (s, d) in enumerate(st_dur_list):
-            tl_line += """t{0}="{2}" s{0}="{1}" """.format(i, s, d)
-
-        tmpl = """\t\t<traffic%d length="%d" """ % (tl, len(st_dur_list))
-        tl_conf_list.append(tmpl + tl_line + "/>")
-
-
-    tl_params = {
-        "num_tl": num_tl,
-        "interval": params.get('trafficlight').get('interval', 500),
-        "tl_conf": '\n'.join(tl_conf_list),
-    }
-
-    if tl_params['interval'] == 0:
-        tl_params['interval'] = 500
-
-    _fields['trafficlight'] = "mw/config/trafficlight.xml"
-    params['trafficlight'] = tl_params
-
-    # choirconf.xml parameters
-    mw_params = {
-        "station_id": params.get("stationid"),
-        "station_type": params.get("station_type"),
-    }
-
-    _fields['mw'] = "mw/choirconf.xml"
-    params['mw'] = mw_params
-
     # Generate configuration files
     for k, v in _fields.iteritems():
-        if k in params:
-            logging.info("Creating configuration for %s: %s", k, v)
-            _process(params[k], v)
+        logging.info("Creating configuration for %s: %s", k, v)
+        _process(params['its_station'][k], v)
+
+def push_MIB_configuration(params, envname):
+    #Push MIB configuration from JSON
+    env_num = int(envname[3:])
+    _, rem_ip = _addr_pair(env_num)
+    for service, conf_values in sorted(params['its_station']['services'].iteritems(), key=lambda t:t[0]):
+        logging.info("Pushing MIB configurations for %s service" % (service))
+        cmd = "mwconfig mib set -t %s " % (service[3:])
+        for key, value in sorted(conf_values.iteritems(), key=lambda t:t[0]):
+            formatted_value = value
+            if type(value) == bool:
+                formatted_value = str(value).lower()
+            elif type(value) == str:
+                formatted_value = '\"' + value + '\"'
+            elif type(value) == unicode:
+                formatted_value = '\"' + str(value) + '\"'
+            cmd += "'%s=%s' " % (key, formatted_value)
+    cmd += "-d tcp://%s:49154" % (rem_ip)
+    out = subprocess.check_call(shlex.split(cmd))
+    out = subprocess.check_call(shlex.split("mwconfig control start -t %s -d tcp://%s:49154" % (service[3:], rem_ip)))
 
 def stop_all():
     _service_action("stop", "*");
@@ -298,51 +255,188 @@ def get_capture():
 
 
 def statistics():
-    stats = { "num_stations": get_envs(),
-              "cam_stats": get_cam(),
-              "denm_stats": get_denm(),
-              "spat_stats": get_spat(),
-              "map_stats": get_map(),
-              "ivi_stats": get_ivi(),
-              "capture_enabled": get_capture(), }
+    stats = { "num_stations": get_envs()
+              #"cam_stats": get_cam(),
+              #"denm_stats": get_denm(),
+              #"spat_stats": get_spat(),
+              #"map_stats": get_map(),
+              #"ivi_stats": get_ivi(),
+              #"capture_enabled": get_capture(),
+    }
     yield json.dumps(stats)
 
 
 def process_message(params):
     defaults = {
-        "stationid": rng.randint(1, 65535),
-        "station_type": 15,
-        "gn": {
-            "gn_addr": "0:0:0:1",
-            "geobc_fwd_alg": 0,
-        },
-        "denm": {
-            "forwarding": True,
-            "forceactionid": False,
-            "autoupdate": False,
-        },
-        "ivi": {
-            "autoupdate": False,
-        },
-        "trafficlight": {
-            "states": [],
-            "durations": [],
-        },
-        "map": {
-            "msgID": 18,
-            "msgSubID": 1,
-            "msgIssueRevision": 1,
-        },
-        "cam": {
-            "enable": False,
-            "idx": 0,
-            "protectedzones": [],
-        },
+        "its_station": {
+            "itsnet": {
+                "gn_addr": "0:0:0:1",
+                "geobc_fwd_alg": 0,
+            },
+            "services": {
+                "10-IdentityManager": {
+#                    "service.start": True,
+                    "choir.applicationid": 1,
+                    "choir.identitycacheid": 1,
+                    "identity.stationid": rng.randint(1, 65535),
+                    "identity.stationtype": 5,
+                    "identity.idchangeenabled": False,
+                    "security.enabled": False,
+                    "security.signmessages": False,
+                },
+                "10-Pvt": {
+#                    "service.start": True,
+                    "choir.applicationid": 20,
+                    "choir.vdpcacheid": 0,
+                    "pvtconfig.recomputeinterval": 2000,
+                    "sources.count": 7,
+                    "source1.profile": "time",
+                    "source1.name": "ntpprovider",
+                    "source1.enabled": True,
+                    "source1.feedmsgid": 207,
+                    "source1.timeout": 1800000,
+                    "source2.profile": "native",
+                    "source2.name": "recorder",
+                    "source2.enabled": False,
+                    "source2.feedmsgid" :204,
+                    "source2.timeout": 5000,
+                    "source3.profile": "autotalks",
+                    "source3.name": "autotalksprovider",
+                    "source3.enabled": False,
+                    "source3.feedmsgid": 201,
+                    "source3.timeout": -1,
+                    "source3.filtermode": 2,
+                    "source3.fixspeedresetheadingthreshold": 1.0,
+                    "source3.fixspeedupdateheadingthreshold": 2.0,
+                    "source4.profile": "native",
+                    "source4.name": "staticprovider",
+                    "source4.enabled": True,
+                    "source4.feedmsgid": 206,
+                    "source4.timeout": -1,
+                    "source4.fields": "ls2004",
+                    "source5.profile": "gpsd",
+                    "source5.name":"gpsprovider",
+                    "source5.enabled": False,
+                    "source5.feedmsgid": 205,
+                    "source5.timeout": 2000,
+                    "source6.profile": "user",
+                    "source6.name": "userdata",
+                    "source6.enabled": True,
+                    "source6.feedmsgid": 203,
+                    "source6.timeout": -1,
+                    "source6.filtermode": 0,
+                    "source7.profile": "native",
+                    "source7.name": "staticprovider",
+                    "source7.enabled": True,
+                    "source7.timeout": -1
+                },
+                "10-V2XService": {
+#                    "service.start": True,
+                    "ipv6.enabled": True,
+                    "mwtun1.channel": "cch",
+                    "mwtun1.iface": "tun0",
+                    "mwtun1.group": "ff02::1234",
+                    "mwtun1.header": True
+                },
+                "20-NtpProvider": {
+                    "choir.messageid": 207,
+                    "ntpserver.address": "0.pool.ntp.org",
+                    "ntpserver.port": 123
+                },
+                "20-StaticProvider": {
+                    "choir.messageid": 206,
+                    "staticposition.latitude": 48.135,
+                    "staticposition.longitude": -1.622,
+                    "staticposition.altitude": 182,
+                    "staticposition.speed": 1.4,
+                    "staticposition.heading": 189.2,
+                    "staticposition.climb": 0,
+                    "staticposition.ls2004": 5
+                },
+                "40-CaService": {
+                    "pubsub.senderid": 61,
+                    "pubsub.outcam": 22,
+                    "pubsub.incam": 32,
+                    "pubsub.owncam": 42,
+                    "cache.inCacheId": 1,
+                    "cache.vdpcacheid": 0,
+                    "cache.stationPropertiesId": 3,
+                    "cache.pathhistorycacheid": 9,
+                    "socket.cam" : "gn+btp://cch:2001",
+                    "camparameters.protocolversion": 1,
+                    "camparameters.messageid": 2,
+                    "camparameters.vehiclelengthconfind": 0,
+                    "recvcontrol.dropownmsgs": False,
+                    "sendcontrol.generationcontrol": True,
+                    "sendcontrol.genmaxinterval": 200,
+                    "sendcontrol.genmininterval": 100,
+                    "sendcontrol.genminintervaldcc": 100,
+                    "sendcontrol.consecutivecam": 3,
+                    "sendcontrol.lowfrequencycontrol": True,
+                    "sendcontrol.genminintervallf": 500,
+                    "sendcontrol.mitigationcontrol": True,
+                    "sendcontrol.mitigationinterval": 1000,
+                    "securityparameters.signmessages": False,
+                    "securityparameters.securitycontrol": False,
+                    "securityparameters.aid": 36,
+                    "lifetime.value": 40,
+                    "protectedzone.index": 0,
+                    "zone0.type": 0,
+                    "zone0.latitude": 43.5512784,
+                    "zone0.longitude": 10.3002593,
+                    "zone0.zoneid": 1,
+                    "zone0.radius": 100,
+                    "zone0.expiration": 417381883
+                },
+                "50-LdmService": {
+                    "pubsub.camreceiverid": 90,
+                    "pubsub.incam": 32,
+                    "pubsub.owncam": 42,
+                    "pubsub.denmreceiverid": 94,
+                    "pubsub.indenm": 45,
+                    "pubsub.owndenm": 65,
+                    "pubsub.spatreceiverid": 89,
+                    "pubsub.inspat": 24,
+                    "pubsub.ownspat": 44,
+                    "pubsub.inmap": 23,
+                    "pubsub.ownmap": 43,
+                    "pubsub.ivireceiverid": 95,
+                    "pubsub.inivi": 37,
+                    "pubsub.ownivi": 67,
+                    "cache.ldmcamcacheid": 10,
+                    "cache.ldmeventcacheid": 11,
+                    "cache.ldmtlcacheid": 12,
+                    "cache.ldmprotectedcacheid": 13,
+                    "cache.ldmsigncacheid": 14,
+                    "cache.vdpcacheid": 0,
+                    "station.enable": True,
+                    "station.maxdistance": 1000,
+                    "event.enable": True,
+                    "event.maxdistance":2000,
+                    "event.relevancedistance": 1000,
+                    "event.relevancedistancefromtrace": 20,
+                    "event.relevanceheading": 45,
+                    "event.relevancedistancenoheading": 40,
+                    "trafficlight.enable": True,
+                    "trafficlight.maxdistance": 1000,
+                    "trafficlight.relevancedistance": 200,
+                    "trafficlight.lanerelevancedistance": 5,
+                    "signage.enable": True,
+                    "signage.maxdistance": 1000,
+                    "signage.relevancedistance": 200,
+                    "signage.relevancedistancefromtrace": 20,
+                    "signage.relevanceanglefromtrace": 20.0,
+                    "camrelevance.frequency": 100,
+                    "camrelevance.timeout": 2000,
+                    "denmrelevance.frequency": 500,
+                    "spatmaprelevance.frequency": 100,
+                    "spatmaprelevance.timeout": 2000,
+                    "ivirelevance.frequency": 500
+                }
+            }
+        }
     }
 
-
-    if params.get('cam'):
-        params["cam"]["enable"] = True
     defaults = _dict_update(defaults, params)
 
     logging.debug("Processing received JSON:\n%s", pprint.pformat(defaults))
