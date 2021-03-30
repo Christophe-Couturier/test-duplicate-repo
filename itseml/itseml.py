@@ -16,6 +16,7 @@ import pprint
 import random
 import json
 import time
+import re
 
 from shutil import copyfile
 from string import Template
@@ -161,6 +162,7 @@ def get_envs():
 
 def get_cache_list(cacheid):
     out = subprocess.check_output(["ip", "netns"])
+    out = re.sub(r'\(id: \d+\)', '', out)
     out = out.replace('env', ' ').replace('\n', '').strip()
 
     s = {}
@@ -170,17 +172,21 @@ def get_cache_list(cacheid):
         if len(i) > 0:
             _, rem_ip = _addr_pair(int(i))
             appid = rng.randint(2**16, 2**30)
-            res = subprocess.check_output(shlex.split("mwcache -a %d -c %d -o 0 -l -d tcp://%s:49154/" % (appid, cacheid, rem_ip)))
-            d = json.loads(res)
-            s[i] = len(d['objectList'])
+            res = subprocess.check_output(shlex.split("mwcache -a %d -c %d -l -d tcp://%s:49154/" % (appid, cacheid, rem_ip)))
+            logging.info("Here is the return of cache list : %s" % (res))
+            if not res:
+                s[i] = 0
+            else:
+                d = json.loads(res)
+                s[i] = len(d)
 
     return s
 
 def get_denm():
-    return get_cache_list(2)
+    return get_cache_list(11)
 
 def get_ivi():
-    return get_cache_list(3)
+    return get_cache_list(14)
 
 def get_map():
     out = subprocess.check_output(["ip", "netns"])
@@ -202,6 +208,7 @@ def get_map():
 
 def get_spat():
     out = subprocess.check_output(["ip", "netns"])
+    out = re.sub(r'\(id: \d+\)', '', out)
     out = out.replace('env', ' ').replace('\n', '').strip()
 
     s = {}
@@ -209,22 +216,19 @@ def get_spat():
 
     for i in envs:
         if len(i) > 0:
-            path = "/var/run/itseml/env%s/mw/config/trafficlight.xml" % (i)
+            path = "/var/run/itseml/env%s/request.json" % (i)
             with open(path, 'r') as f:
-                for line in f:
-                    if 'index size' in line:
-                        res = line
-            res = res.strip('\t\n></')
-            res = res.replace('"', "").split('=')[1]
-            if int(res) == 0:
+                config = json.load(f)
                 s[i] = 0
-            else:
-                s[i] = 1
+                if "40-spatservice" in config['its_station']['services']:
+                    if "index.size" in config['its_station']['services']['40-spatservice']:
+                        if config['its_station']['services']['40-spatservice']['index.size'] > 0 : s[i] = 1
 
     return s
 
 def get_cam():
     out = subprocess.check_output(["ip", "netns"])
+    out = re.sub(r'\(id: \d+\)', '', out)
     out = out.replace('env', ' ').replace('\n', '').strip()
 
     s = {}
@@ -233,11 +237,11 @@ def get_cam():
     for i in envs:
         if len(i) > 0:
             s[i] = 0
-            path = "/var/run/itseml/env%s/mw/config/caconfig.xml" % (i)
+            path = "/var/run/itseml/env%s/request.json" % (i)
             with open(path, 'r') as f:
-                for line in f:
-                    if 'service start="true"' in line:
-                        s[i] = 1
+                config = json.load(f)
+                if "40-CaService" in config['its_station']['services']:
+                    s[i] = 1
     return s
 
 def get_capture():
@@ -255,12 +259,12 @@ def get_capture():
 
 
 def statistics():
-    stats = { "num_stations": get_envs()
-              #"cam_stats": get_cam(),
-              #"denm_stats": get_denm(),
-              #"spat_stats": get_spat(),
+    stats = { "num_stations": get_envs(),
+              "cam_stats": get_cam(),
+              "denm_stats": get_denm(),
+              "spat_stats": get_spat(),
               #"map_stats": get_map(),
-              #"ivi_stats": get_ivi(),
+              "ivi_stats": get_ivi(),
               #"capture_enabled": get_capture(),
     }
     yield json.dumps(stats)
