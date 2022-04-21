@@ -136,9 +136,9 @@ def push_MIB_configuration(params, envname):
             elif type(value) == unicode:
                 formatted_value = '\"' + str(value) + '\"'
             cmd += "'%s=%s' " % (key, formatted_value)
-    cmd += "-d tcp://%s:49154" % (rem_ip)
-    out = subprocess.check_call(shlex.split(cmd))
-    out = subprocess.check_call(shlex.split("mwconfig control start -t %s -d tcp://%s:49154" % (service[3:], rem_ip)))
+    	cmd += "-d tcp://%s:49154" % (rem_ip)
+    	out = subprocess.check_call(shlex.split(cmd))
+    	out = subprocess.check_call(shlex.split("mwconfig control start -t %s -d tcp://%s:49154" % (service[3:], rem_ip)))
 
 def stop_all():
     _service_action("stop", "*");
