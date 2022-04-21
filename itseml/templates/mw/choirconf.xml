@@ -2,39 +2,124 @@
 <!-- Configuration for Choir -->
 <!-- -->
 <configuration>
-    <globalconf
-        its_su_id           = "$station_id"
-        drop_own_msgs       = "true"
-        stationtype         = "$station_type"
-        port_ipc            = "49154"
-	itssecurity         = "false"
-        start_services      = "true" />
 
-    <services>
-         <service name="SpatService" class="fr.yogoko.choir.facilities.spatservice.SpatService"/>
-         <service name="CaService" class="fr.yogoko.choir.facilities.caservice.CaServiceImpl"/>
-         <service name="V2XAdapter" class="fr.yogoko.choir.facilities.v2xservice.V2XAdapter"/>
-         <service name="VdpService" class="fr.yogoko.choir.facilities.vehicledataprovisioning.VdpService"/>
-         <service name="PositionProvider" class="fr.yogoko.choir.facilities.positionmanager.PositionProviderImpl"/>
-         <service name="TrafficLight" class="fr.yogoko.choir.facilities.trafficlight.TrafficLightSender"/>
-         <service name="DenService" class="fr.yogoko.choir.facilities.denservice.DenServiceImpl"/>
-         <service name="IviService" class="fr.yogoko.choir.facilities.iviservice.IviServiceImpl"/>
-         <service name="LdmService" class="fr.yogoko.choir.facilities.ldm.LdmService"/>
-    </services>
+	<!--
+		Global configuration for mw-server:
+		start_services: Whether services in config/ directory should be
+		        configured and started automatically on middleware startup
+	-->
+	<globalconf start_services = "false" />
 
-    <websocket
-        enabled             = "true"
-        port                            = "8080"
-        root_path           = "/"
-        min_dynamic_id      = "65535"
-        max_dynamic_id      = "2147483647"/>
+	<!--
+		Configuration for IPC connections (moved from global configuration):
+		enabled: Whether or not IPC connections are enabled
+		port: Port to be used for IPC connections from middleware clients
+		min_buffer_size: Minimum allocation size for IPC buffer
+		max_buffer_size: Maximum allocation size for IPC buffer
+		cleanup_on_channel_error: Cleanup client listener thread on channel error
+	-->
+	<ipc
+		enabled             = "true"
+		port                = "49154"
+		min_buffer_size     = "4096"
+		max_buffer_size     = "8192"
+		cleanup_on_channel_error = "true" />
 
-    <uppertester
-        enabled             = "false"
-        local_port          = "12345"
-        remote_ip           = "10.200.60.84"
-        remote_port         = "4001" />
 
+	<!--
+		Configuration for license verification:
+		mode: licensing mode (static or online)
+		filepath: Path to the license file or the client certificate
+		truststore: Truststore to use for connecting to YoGoKo licensing server
+	-->
+	<license
+		mode                = "static"
+		filepath            = "yogoko-middleware.license"
+		truststore          = "/etc/ssl/certs/java/cacerts" />
+
+
+	<!--
+		Configuration for the websocket API:
+		enabled: Whether or not the websocket server should be started
+		port: TCP port to use for creating of the websocket server
+		root_path: HTTP base path for websocket URLs
+		min_dynamic_id: Use this minimum for dynamic allocation of application Ids
+		max_dynamic_id: Use this maximum for dynamic allocation of application Ids
+		reply_ping: Whether the websocket should reply to ping requests from clients
+	-->
+	<websocket
+		enabled             = "true"
+		port                = "8080"
+		root_path           = "/"
+		min_dynamic_id      = "65535"
+		max_dynamic_id      = "2147483647"
+		reply_ping          = "true" />
+
+
+		<!--
+		Configuration for faulty messages recording:
+		enabled: Whether or not faulty messages should be recorded
+		path: Path on the filesystem where to record faulty messages
+	-->
+	<tlog
+		enabled             = "false"
+		path                = "/var/lib/scoop/tlog" />
+
+
+	<!--
+		List of services that may be controlled by the ConfigService mechanism.
+		These services may be automatically configured and started at
+		middleware startup if start_services is enabled. The default list
+		should be kept untouched.
+
+		For each service:
+		name: Symbolic unique name identifying this service. The name is used
+		        to identify this service in configuration files
+		class: Class controlling the service. This class must implement the
+		        ConfigMessageListener interface.
+		remote: Whether this service is declared as an external service
+	-->
+	<services>
+		<service name="V2XService" class="fr.yogoko.choir.facilities.v2xservice.V2XService"/>
+		<service name="V2XAdapter" class="fr.yogoko.choir.facilities.v2xservice.V2XAdapter"/>
+		<service name="M2MService" class="fr.yogoko.choir.facilities.m2mservice.M2MService"/>
+		<service name="M2MCollector" class="fr.yogoko.choir.facilities.m2mservice.M2MCollector"/>
+		<service name="PositionProvider" class="fr.yogoko.choir.facilities.positionmanager.PositionProviderImpl"/>
+		<service name="Pvt" class="fr.yogoko.choir.facilities.positionmanager.Pvt"/>
+		<service name="StaticProvider" class="fr.yogoko.choir.facilities.positionmanager.StaticProvider"/>
+		<service name="GpsProvider" class="fr.yogoko.choir.facilities.positionmanager.GpsProvider"/>
+		<service name="NtpProvider" class="fr.yogoko.choir.facilities.positionmanager.NtpProvider"/>
+		<service name="PathHistoryManager" class="fr.yogoko.choir.facilities.positionmanager.PathHistoryManager"/>
+		<service name="VdpService" class="fr.yogoko.choir.facilities.vehicledataprovisioning.VdpService"/>
+		<service name="CaService" class="fr.yogoko.choir.facilities.caservice.CaServiceImpl"/>
+		<service name="DenService" class="fr.yogoko.choir.facilities.denservice.DenServiceImpl"/>
+		<service name="SpatService" class="fr.yogoko.choir.facilities.spatservice.SpatService"/>
+		<service name="IviService" class="fr.yogoko.choir.facilities.iviservice.IviServiceImpl"/>
+		<!-- SAE specific services -->
+		<service name="BsService" class="fr.yogoko.choir.facilities.bsservice.BsService"/>
+		<service name="FrameService" class="fr.yogoko.choir.facilities.dsrcframeservice.FrameService"/>
+		<service name="LdmService" class="fr.yogoko.choir.facilities.ldm.LdmService"/>
+		<service name="PreserveClient" class="fr.yogoko.choir.security.preserve.PreserveClient"/>
+		<service name="IdentityManager" class="fr.yogoko.choir.management.identitymanager.IdentityManager"/>
+		<service name="SecurityClient" class="fr.yogoko.choir.security.securityclient.SecurityClient"/>
+		<service name="RadioManagement" class="fr.yogoko.choir.management.radio.RadioManagement"/>
+		<service name="DatabaseService" class="fr.yogoko.choir.facilities.database.DatabaseImplementation"/>
+		<service name="Recorder" class="fr.yogoko.choir.facilities.database.Recorder"/>
+		<service name="TrafficLight" class="fr.yogoko.choir.applications.trafficlight.TrafficLightSender"/>
+		<service name="DenmTrigApplication" class="fr.yogoko.choir.applications.denmtrigapplication.DenmTriggeringApplication"/>
+		<service name="AutotalksServices" remote="true"/>
+		<service name="itsnet" remote="true"/>
+	</services>
+
+
+	<!--
+		Expiration parameters for caches.
+
+		For each cache:
+		id: Cache identifier to configure
+		timeToLiveSecond: expiration time of an entry
+		size: maximum size of a cache before removal of old entries
+	-->
 	<caches>
 		<!--  VDP cache configuration (CAN/GPS)-->
 		<cache id="0" timeToLiveSecond="-2147483648" size="65535"/>
