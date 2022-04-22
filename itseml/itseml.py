@@ -276,6 +276,7 @@ def process_message(params):
             "itsnet": {
                 "gn_addr": "0:0:0:1",
                 "geobc_fwd_alg": 0,
+                "proto_version": 0
             },
             "services": {
                 "10-IdentityManager": {
