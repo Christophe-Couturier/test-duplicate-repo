@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Configuration for Choir -->
+<!-- -->
+<configuration>
+
+	<!--
+		Global configuration for mw-server:
+		start_services: Whether services in config/ directory should be
+		        configured and started automatically on middleware startup
+	-->
+	<globalconf start_services = "false" />
+
+	<!--
+		Configuration for IPC connections (moved from global configuration):
+		enabled: Whether or not IPC connections are enabled
+		port: Port to be used for IPC connections from middleware clients
+		min_buffer_size: Minimum allocation size for IPC buffer
+		max_buffer_size: Maximum allocation size for IPC buffer
+		cleanup_on_channel_error: Cleanup client listener thread on channel error
+	-->
+	<ipc
+		enabled             = "true"
+		port                = "49154"
+		min_buffer_size     = "4096"
+		max_buffer_size     = "8192"
+		cleanup_on_channel_error = "true" />
+
+
+	<!--
+		Configuration for license verification:
+		mode: licensing mode (static or online)
+		filepath: Path to the license file or the client certificate
+		truststore: Truststore to use for connecting to YoGoKo licensing server
+	-->
+	<license
+		mode                = "download-static"
+		filepath            = "yogoko-middleware.license"
+		truststore          = "./truststore.jks" />
+
+
+	<!--
+		Configuration for the websocket API:
+		enabled: Whether or not the websocket server should be started
+		port: TCP port to use for creating of the websocket server
+		root_path: HTTP base path for websocket URLs
+		min_dynamic_id: Use this minimum for dynamic allocation of application Ids
+		max_dynamic_id: Use this maximum for dynamic allocation of application Ids
+		reply_ping: Whether the websocket should reply to ping requests from clients
+	-->
+	<websocket
+		enabled             = "false"
+		port                = "8080"
+		root_path           = "/"
+		min_dynamic_id      = "65535"
+		max_dynamic_id      = "2147483647"
+		reply_ping          = "true" />
+
+
+		<!--
+		Configuration for faulty messages recording:
+		enabled: Whether or not faulty messages should be recorded
+		path: Path on the filesystem where to record faulty messages
+	-->
+	<tlog
+		enabled             = "false"
+		path                = "/var/lib/scoop/tlog" />
+
+
+	<!--
+		List of services that may be controlled by the ConfigService mechanism.
+		These services may be automatically configured and started at
+		middleware startup if start_services is enabled. The default list
+		should be kept untouched.
+
+		For each service:
+		name: Symbolic unique name identifying this service. The name is used
+		        to identify this service in configuration files
+		class: Class controlling the service. This class must implement the
+		        ConfigMessageListener interface.
+		remote: Whether this service is declared as an external service
+	-->
+	<!--
+	<services>
+	</services>
+	-->
+
+	<!--
+		Expiration parameters for caches.
+
+		For each cache:
+		id: Cache identifier to configure
+		timeToLiveSecond: expiration time of an entry
+		size: maximum size of a cache before removal of old entries
+	-->
+	<caches>
+		<!--  VDP cache configuration (CAN/GPS)-->
+		<cache id="0" timeToLiveSecond="-2147483648" size="65535"/>
+		<!--  CAM cache configuration -->
+		<cache id="1" timeToLiveSecond="-2147483648" size="65535"/>
+		<!-- DENM originating cache-->
+		<cache id="2" timeToLiveSecond="-2147483648" size="65535"/>
+		<!-- DENM receiving cache -->
+		<cache id="21" timeToLiveSecond="-2147483648" size="65535"/>
+		<!-- DENM forwarding cache -->
+		<cache id="22" timeToLiveSecond="-2147483648" size="65535"/>
+		<!--  Default cache configuration-->
+		<cache id="default" timeToLiveSecond="-2147483648" size="65535"/>
+	</caches>
+
+
+</configuration>

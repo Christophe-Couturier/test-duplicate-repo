@@ -1,0 +1,12 @@
+[Unit]
+Description= Run light Middleware instance
+
+[Service]
+WorkingDirectory=/etc/mw-license/
+ExecStart=/bin/java -jar /usr/bin/middleware-server.jar
+ExecStartPost=/bin/sleep 10s
+Type=simple
+Restart=no
+
+[Install]
+WantedBy=Multi-user.target
