@@ -111,6 +111,7 @@ The package will install:
  - the cli-itseml and ws-itseml frontends (in /usr/bin)
  - the required systemd unit files (in /lib/systemd/system)
  - some documentation in /usr/share/doc/itseml/
+ - the required files for the light middlawre instance
 
 For a fully functional setup, you need to:
  - configure the v2xbr bridge (see below)
@@ -118,6 +119,8 @@ For a fully functional setup, you need to:
     * apt-get install nginx-extras # We need Lua support
     * cp /usr/share/doc/itseml/sample.nginx.conf /etc/nginx/sites-available
     * ln -sf /etc/nginx/sites-available/sample.nginx.conf /etc/nginx/sites-enabled/default
+  - enabled the systemd instance of middleware :
+    * systemctl enabled license-mw-server.service
 
 The last command will only overwrite the symlink; the default file is left
 untouched. Adjust if necessary.
