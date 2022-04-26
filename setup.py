@@ -22,6 +22,11 @@ setup(name='itseml',
                                            'service_files/eml-itsnet@.service',
                                            'service_files/eml-mw-server@.service',
                                            'service_files/eml-netns@.service',
-                                           'service_files/ws-itseml.service'])]
+                                           'service_files/ws-itseml.service',
+                                           'service_files/license-mw-server.service']),
+                  ('/etc/mw-license', ['mw-server/choirconf.xml',
+                                       'mw-server/log4j.properties',
+                                       'mw-server/yogoko-middleware.p12',
+                                       'mw-server/truststore.jks'])]
 
      )

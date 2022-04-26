@@ -269,6 +269,19 @@ def statistics():
     }
     yield json.dumps(stats)
 
+def get_license_validity():
+    # if port is open, the verification passed
+    # if not, the verification failed.
+    s = socket.socket()
+    try:
+        subprocess.check_output(["systemctl", "restart", "license-mw-server"])
+        s.connect(("127.0.0.1", 49154))
+        logging.info("The middleware have a valid license, verification passed")
+        return True
+    except socket.error, e:
+        logging.error("The middleware doesn't have a valid license, verification failed : %s", e)
+        return False
+
 
 def process_message(params):
     envid = params["id"]
@@ -529,6 +542,10 @@ def process_message(params):
 
     envname = "env" + str(defaults["id"])
 
+    license_status = False
+
+    response = """{"status": true}"""
+
     directory = "/var/run/itseml/%s/mw/config" % (envname)
     logging.info("Creating destination directory: %s", directory)
 
@@ -538,16 +555,27 @@ def process_message(params):
         logging.error("Failed to create directory: %s" % (e))
 
     if defaults['action'] == 'start':
+        license_status = get_license_validity()
+
+    if license_status :
+        try:
+            destination = "/usr/local/lib/python2.7/dist-packages/itseml/templates/mw/yogoko-middleware.license"
+            copyfile("/etc/mw-license/yogoko-middleware.license", destination)
+            logging.info("license are copied in %s directory", envname)
+        except distutils.errors.DistutilsFileError, e:
+            logging.error("Failed to copy license in instance directory : %s", e)
+    else:
+        response =  """ {"status": false, "message": "License is not valid" """
+
+    if (defaults['action'] == 'start') and license_status :
         defaultsjson = json.dumps(defaults)
         with open(os.path.join(CONF_PATH, envname, 'request.json'), 'w') as f:
             f.write(defaultsjson)
 
-    response = """{"status": true}"""
-
     try:
         status_env(envname)
     except subprocess.CalledProcessError, e:
-        if defaults['action'] == 'start':
+        if (defaults['action'] == 'start') and license_status :
             try:
                 response = start_env(defaults, envname)
             except KeyError, e:
