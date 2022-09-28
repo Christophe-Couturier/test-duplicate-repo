@@ -271,6 +271,8 @@ def statistics():
 
 
 def process_message(params):
+    envid = params["id"]
+    loc_ip, _ = _addr_pair(envid)
     defaults = {
         "its_station": {
             "itsnet": {
@@ -505,7 +507,14 @@ def process_message(params):
                     "spatmaprelevance.frequency": 100,
                     "spatmaprelevance.timeout": 2000,
                     "ivirelevance.frequency": 500
-                }
+                },
+		"80-Recorder": {
+                    "choir.applicationid": 601,
+                    "database.server": "mongodb://%s:27017" % (loc_ip),
+                    "database.dbname": "records_env%d" % (envid),
+                    "msgids.count": 1,
+                    "msgid1.id": 201
+		}
             }
         }
     }
