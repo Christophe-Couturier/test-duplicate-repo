@@ -1,0 +1,259 @@
+#!/bin/bash
+#
+# Copyright (c) 2022, YoGoKo SAS
+#
+
+VERBOSE=1
+MONGODB_URI="127.0.0.1:27017"
+SUBCOMMAND=""
+MONGODB_DATABASE="records"
+RECORD_NAME=""
+MSGIDS_LIST="201"
+MONGODB_COLL_ARRAY=()
+TEMP_DIRECTORY=`mktemp -d`
+IMPORT_ARCHIVE_NAME=""
+EXPORT_ARCHIVE_NAME=""
+
+print_usage() {
+	case $SUBCOMMAND in
+		"export")
+			echo ""
+			echo "Export usage :"
+			echo "ygk_records export [options]"
+			echo "Options:"
+			echo " --recname=<record_name>                The name of the Record to export (mandatory option)"
+			echo " --uri=<mongodb_uri>                    Specify the mongodb uri for export (default value : 127.0.0.1:27017)"
+			echo " --dbname=<mongodb_database_name>       The name of the database to export (default value : records)"
+			echo " --msgids=<message_ids_list>            The list of msgid to export from the capture (default value : 201)"
+			echo " --outfile=<output_archived_file>       The name of the output archived file for the export (default value : record_<recname>_<date>.tar.gz)"
+			echo " --help                                 Print this help message"
+			echo ""
+			shift
+			;;
+		"import")
+			echo ""
+			echo "Import usage : "
+			echo "ygk_records export [options]"
+			echo "Options:"
+			echo " --infile=<input_archived_file>         The name of the input archived file for the import (mandatory option)"
+			echo " --uri=<mongodb_uri>                    Specify the mongodb uri for import (default value : 127.0.0.1:27017)"
+			echo " --dbname=<mongodb_database_name>       The name of the database to import (default value : records)"
+			echo " --msgids=<message_ids_list>            The list of msgid to import from the capture (default value : 201)"
+			echo " --help                                 Print this help message"
+			echo ""
+			shift
+			;;
+		*)
+			echo ""
+			echo "Tool allowing the management of capture/records made through the Y-Smart Recorder Service."
+			echo "Usage : ygk_records <subcommand> [options]"
+			echo "Supported subcommands:"
+			echo "   export     Allow to export an existing record from a mongoDB Database as a tar.gz file"
+			echo "   import     Allow to import an existing record into a mongoDB Database from a tar.gz file"
+			echo ""
+			echo "For help with each subcommand run:"
+			echo "ygk_records <subcommand> --help"
+			echo ""
+	esac
+}
+
+SUBCOMMAND=$1
+
+case $SUBCOMMAND in
+	"export")
+		shift
+	;;
+	"import")
+		shift
+	;;
+	"" | "-h" | "--help")
+		print_usage
+		exit 0
+	;;
+	*)
+		echo "Subcommand $SUBCOMMAND is not supported."
+		print_usage
+		exit 1
+esac
+
+retrieve_recname_from_archive() {
+	# Retrieve record name when in "import mode"
+	command="tar -xvf ${IMPORT_ARCHIVE_NAME} -C ${TEMP_DIRECTORY}"
+	if [ $VERBOSE -eq 0 ]; then
+		command="${command} &>/dev/null"
+	fi
+	eval $command
+	RECORD_NAME=`cat ${TEMP_DIRECTORY}/record_name.txt`
+}
+
+compute_mongodb_coll_array() {
+	IFS=', ' read -r -a MSGIDS_ARRAY <<< "$MSGIDS_LIST"
+	MONGODB_COLL_ARRAY=("${MSGIDS_ARRAY[@]/#/${RECORD_NAME}_}")
+}
+
+
+for arg in "$@"
+do
+	case $arg in
+		--uri=*)
+			MONGODB_URI="${arg#*=}"
+			shift
+			;;
+		--dbname=*)
+			MONGODB_DATABASE="${arg#*=}"
+			shift
+			;;
+		--recname=*)
+			RECORD_NAME="${arg#*=}"
+			shift
+			;;
+		--msgids=*)
+			MSGIDS_LIST="${arg#*=}"
+			shift
+			;;
+		--outfile=*)
+			EXPORT_ARCHIVE_NAME="${arg#*=}"
+			shift
+			;;
+		--infile=*)
+			IMPORT_ARCHIVE_NAME="${arg#*=}"
+			shift
+			;;
+		-q)
+			VERBOSE=0
+			shift
+			;;
+		--help)
+			print_usage
+			exit 0
+			;;
+		*)
+			echo "An invalid argument has been provided or syntax is incorrect please refer to the following message."
+			print_usage
+			exit 1
+		;;
+	esac
+done
+
+if [ ! -z "$IMPORT_ARCHIVE_NAME" ];then
+	retrieve_recname_from_archive
+fi
+compute_mongodb_coll_array
+
+print_variables() {
+	echo "The mongodb uri to use for exporting/importing the record           : ${MONGODB_URI}"
+	echo "The mongodb database name to use for exporting/importing the record : ${MONGODB_DATABASE}"
+	echo "Name of the record to export/import                                 : ${RECORD_NAME}"
+	echo "Name of collection to export/import                                 : ${MONGODB_COLL_ARRAY[*]}"
+	echo "Verbosity                                                           : ${VERBOSE}"
+	if [ $SUBCOMMAND = "export" ]; then
+		echo "Name of exported file                                               : ${EXPORT_ARCHIVE_NAME}"
+	elif [ $SUBCOMMAND = "import" ]; then
+		echo "Name of imported file                                               : ${IMPORT_ARCHIVE_NAME}"
+	fi
+}
+
+export_record() {
+	if [ $VERBOSE -ne 0 ]; then
+		echo "Export from the capturelist collection"
+	fi
+
+	touch $TEMP_DIRECTORY/record_name.txt
+	echo $RECORD_NAME > $TEMP_DIRECTORY/record_name.txt
+	# Export the document referring the capture in the capturelist collection
+	command="mongodump -h ${MONGODB_URI} -d ${MONGODB_DATABASE} -c capturelist -q '{name:\"${RECORD_NAME}\"}' -o ${TEMP_DIRECTORY}"
+
+	if [ $VERBOSE -eq 0 ]; then
+		command="${command} &>/dev/null"
+	fi
+	eval $command
+
+	if [ ! -d ${TEMP_DIRECTORY}/records ]; then
+		echo "Exiting script due to a failed export..."
+		rm -r ${TEMP_DIRECTORY}
+		exit 1
+	fi
+
+	# Export the collection referring to the specified message IDS list provided to the command
+	for collection in ${MONGODB_COLL_ARRAY[*]}
+	do
+		command="mongodump -h ${MONGODB_URI} -d ${MONGODB_DATABASE} -c ${collection} -o ${TEMP_DIRECTORY}"
+		if [ $VERBOSE -eq 0 ]; then
+			command="${command} &>/dev/null"
+		fi
+		eval $command
+	done
+
+	#Compress the output directory
+	if [ $VERBOSE -ne 0 ]; then
+		echo "Generating the ${EXPORT_ARCHIVE_NAME} archived file"
+	fi
+
+	command="tar -cvzf ${EXPORT_ARCHIVE_NAME} -C ${TEMP_DIRECTORY} ."
+	if [ $VERBOSE -eq 0 ]; then
+		command="${command} &>/dev/null"
+	fi
+	eval $command
+
+	rm -r ${TEMP_DIRECTORY}
+}
+
+import_record() {
+	if [ $VERBOSE -ne 0 ]; then
+	echo "Import record in the capturelist collection"
+	fi
+
+	command="mongorestore -h ${MONGODB_URI} -d $MONGODB_DATABASE -c capturelist --dir $TEMP_DIRECTORY/records/capturelist.bson"
+	if [ $VERBOSE -eq 0 ]; then
+		command="${command} &>/dev/null"
+	fi
+	eval $command
+
+	for collection in ${MONGODB_COLL_ARRAY[*]}
+	do
+		command="mongorestore -h ${MONGODB_URI} -d ${MONGODB_DATABASE} -c ${collection} --dir ${TEMP_DIRECTORY}/records/${collection}.bson"
+		if [ $VERBOSE -eq 0 ]; then
+			command="${command} &>/dev/null"
+		fi
+		eval $command
+	done
+
+	if [ $VERBOSE -ne 0 ]; then
+		echo "Deleting extracted file..."
+	fi
+
+	rm -r $TEMP_DIRECTORY
+}
+
+
+if [ $SUBCOMMAND = "export" ];then
+	# Check if mandatory record name attribute has been provided when in "export" mode. Exit otherwise
+	if [ -z "$RECORD_NAME" ]; then
+		echo "Record name has not been provided. Please provide a record name (--recname)."
+		print_usage
+		exit 1
+	fi
+
+	# Check if EXPORT_ARCHIVE_NAME attribute has been provided when in "export" mode. Set to default otherwise
+	if [ -z "$EXPORT_ARCHIVE_NAME" ]; then
+		date=`date +%Y-%m-%d_%H-%M-%S`
+		EXPORT_ARCHIVE_NAME="record_${RECORD_NAME}_${date}.tar.gz"
+	fi
+	if [ $VERBOSE -ne 0 ]; then
+		print_variables
+		echo "Starting exporting the record..."
+	fi
+	export_record
+elif [ $SUBCOMMAND = "import" ];then
+	# Check if IMPORT_ARCHIVE_NAME attribute has been provided when in "import" mode. Exit otherwise
+	if [ -z "$IMPORT_ARCHIVE_NAME" ]; then
+		echo "Imported archive name has not been provided while in import mode. Please provide the imported archived name (--infile)"
+		print_usage
+		exit 1
+	fi
+	if [ $VERBOSE -ne 0 ]; then
+		print_variables
+		echo "Starting importing the record..."
+	fi
+	import_record
+fi
