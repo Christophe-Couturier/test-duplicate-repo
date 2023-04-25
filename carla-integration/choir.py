@@ -70,6 +70,25 @@ class Choir():
 		socket = create_connection("ws://{}:{}/pubsub/pub/{}/{}{}".format(self.ip, self.port, msg_id, self.app_id, format))
 		socket.send(message)
 
+	def publish_yghost(self, msg_id, message, envid, format=""):
+		"""
+		Publish on a specific message id.
+
+		@param msg_id : message id to publish on.
+		@type msg_id : int.
+
+		@param message : message to publish.
+		@type message : string.
+
+		@param format : Format use to publish messages ('s0' = ANY, 's1' = GENERIC, 's2' = ASN1_UPER, 's7' = JSON, 'b' = BINARY).
+		@type format : string.
+		"""
+		if format != "":
+			format = "/{}".format(format)
+
+		socket = create_connection("ws://{}/env/{}/pubsub/pub/{}/{}{}".format(self.ip, envid, msg_id, self.app_id, format))
+		socket.send(message)
+
 	def request(self, msg_id, message, format=""):
 		"""
 		Publish a message for reliable delivery to all subscribers, then wait for their response.
@@ -132,6 +151,24 @@ class Choir():
 		@type entries_mapping : {string:data}.
 		"""
 		socket = create_connection("ws://{}:{}/cache/set/{}/{}/{}".format(self.ip, self.port, cache_id, object_id, self.app_id))
+		json_data = json.dumps(entries_mapping)
+		socket.send(json_data)
+
+	def cache_set_yghost(self, cache_id, object_id, entries_mapping, envid):
+		"""
+		Set specified entries in cache object.
+
+		@param cache_id : id of the target cache.
+		@type cache_id : int.
+
+		@param object_id : id of the target object.
+		@type object_id : int.
+
+
+		@param entries_mapping : mapping key->value to set in the object.
+		@type entries_mapping : {string:data}.
+		"""
+		socket = create_connection("ws://{}/env/{}/cache/set/{}/{}/{}".format(self.ip, envid, cache_id, object_id, self.app_id))
 		json_data = json.dumps(entries_mapping)
 		socket.send(json_data)
 
