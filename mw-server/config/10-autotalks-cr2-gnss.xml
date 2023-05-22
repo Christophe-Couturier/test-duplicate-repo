@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+	<service start="true" instance="0">AutotalksCr2Gnss</service>
+	<config>
+		<positionprovider enabled="1"
+		                  appid="124"
+		                  messageid="201"
+		                  frequency="100" />
+	</config>
+</configuration>

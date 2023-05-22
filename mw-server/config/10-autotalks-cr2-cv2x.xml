@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+	<service start="true" instance="0">AutotalksCr2CV2X</service>
+	<config>
+		<v2x_link_0 enabled="1"
+		            frequency="5920"
+		            traffictype="non-ip"
+		            familyid="etsi"
+		            pppp="0"
+		            srcl2id="1122867" />
+
+		<bridge0 enabled="1"
+		         rxport="500"
+		         txport="501" />
+
+		<sockets count="0" />
+        </config>
+</configuration>

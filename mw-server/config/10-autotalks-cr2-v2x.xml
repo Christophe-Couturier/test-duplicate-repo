@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+	<service start="true" instance="0">AutotalksCr2V2X</service>
+	<config>
+		<v2x_link_0 enabled="1" />
+
+		<bridge0 enabled="1"
+		         rxport="500"
+		         txport="501" />
+
+		<v2x_mac_table_0 enabled="1"
+		                 expiration_sec="40"/>
+
+        </config>
+</configuration>
