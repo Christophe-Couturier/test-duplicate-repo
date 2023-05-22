@@ -29,6 +29,8 @@ logger.setLevel(logging.DEBUG)
 
 IP_NETWORK= "10.1.1.0/24"
 SUBNET_PLEN = 30
+DNAT_MWPORT_BASE = 49200
+DNAT_WSPORT_BASE = 8100
 rng = random.SystemRandom()
 
 # create formatter
@@ -64,6 +66,13 @@ def _addr_pair(envnum):
     remote = str(netaddr.IPAddress(net.first+2))
 
     return local, remote
+
+def _api_ports(envnum):
+    """Return a tuple with middleware ipc port, websocket port"""
+    mwport = DNAT_MWPORT_BASE + envnum
+    wsport = DNAT_WSPORT_BASE + envnum
+
+    return mwport, wsport
 
 def _get_if_mac(iface):
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
