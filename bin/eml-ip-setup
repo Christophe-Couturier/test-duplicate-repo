@@ -7,17 +7,22 @@ import sys
 import time
 from itseml import _addr_pair, SUBNET_PLEN
 
+def _call_cmd(cmd, check_call=True):
+    if check_call:
+        return subprocess.check_call(shlex.split(cmd))
+    else:
+        return subprocess.call(shlex.split(cmd))
+
 def _network_conf(envnum):
     local, remt = _addr_pair(envnum)
 
-    cmds = []
-    cmds.append("ip netns exec env%d ip a a %s/%d dev eth1" % (envnum, remt, SUBNET_PLEN))
-    cmds.append("ip netns exec env%d ip r a default via %s" % (envnum, local))
+    print("Applying IP configuration for env%d" % (envnum))
     time.sleep(1)
-    cmds.append("ip a a %s/%d dev ctl%d" % (local, SUBNET_PLEN, envnum))
-    print "Applying IP configuration for env%d" % (envnum)
-    for cmd in cmds:
-        out = subprocess.check_call(shlex.split(cmd))
+
+    # Setup IP addressing
+    _call_cmd("ip netns exec env%d ip a a %s/%d dev eth1" % (envnum, remt, SUBNET_PLEN))
+    _call_cmd("ip netns exec env%d ip r a default via %s" % (envnum, local))
+    _call_cmd("ip a a %s/%d dev ctl%d" % (local, SUBNET_PLEN, envnum))
 
 if __name__ == '__main__':
     try:
