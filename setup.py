@@ -24,9 +24,11 @@ setup(name='itseml',
                                            'service_files/eml-netns@.service',
                                            'service_files/ws-itseml.service',
                                            'service_files/license-mw-server.service']),
-                  ('/etc/mw-license', ['mw-server/choirconf.xml',
+                  ('/etc/mw-server', ['mw-server/choirconf.xml',
                                        'mw-server/log4j.properties',
                                        'mw-server/yogoko-middleware.p12',
-                                       'mw-server/truststore.jks'])]
-
+                                       'mw-server/truststore.jks']),
+                  ('/etc/mw-server/config', ['mw-server/config/10-autotalks-cr2-gnss.xml',
+                                             'mw-server/config/10-autotalks-cr2-v2x.xml',
+                                             'mw-server/config/10-autotalks-cr2-cv2x.xml'])]
      )
