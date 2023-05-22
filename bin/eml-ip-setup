@@ -5,7 +5,7 @@ import shlex
 import subprocess
 import sys
 import time
-from itseml import _addr_pair, SUBNET_PLEN
+from itseml import _addr_pair, _api_ports, SUBNET_PLEN
 
 def _call_cmd(cmd, check_call=True):
     if check_call:
@@ -15,6 +15,7 @@ def _call_cmd(cmd, check_call=True):
 
 def _network_conf(envnum):
     local, remt = _addr_pair(envnum)
+    mwport, wsport = _api_ports(envnum)
 
     print("Applying IP configuration for env%d" % (envnum))
     time.sleep(1)
@@ -23,6 +24,24 @@ def _network_conf(envnum):
     _call_cmd("ip netns exec env%d ip a a %s/%d dev eth1" % (envnum, remt, SUBNET_PLEN))
     _call_cmd("ip netns exec env%d ip r a default via %s" % (envnum, local))
     _call_cmd("ip a a %s/%d dev ctl%d" % (local, SUBNET_PLEN, envnum))
+
+    # Add port mappings for DNAT
+    #_call_cmd("nft delete element inet itseml dnatv4_mw %d" % (mwport), False)
+    #_call_cmd("nft add element inet itseml dnatv4_mw {%d:%s}" % (mwport,remt), False)
+    #_call_cmd("nft delete element inet itseml dnatv4_ws %d" % (wsport), False)
+    #_call_cmd("nft add element inet itseml dnatv4_ws {%d:%s}" % (wsport,remt), False)
+    # Use iptables instead of nftables as the kernel currently used on Y-Ghost is built without NFT support
+    _call_cmd("iptables-legacy -t nat -F dnat-env%d" % (envnum), False)
+    _call_cmd("iptables-legacy -t nat -X dnat-env%d" % (envnum), False)
+    _call_cmd("iptables-legacy -t nat -N dnat-env%d" % (envnum), False)
+    _call_cmd("iptables-legacy -t nat -A dnat-env%d -m tcp -p tcp --dport %d -j DNAT --to-destination %s:49154" % (envnum, mwport, remt), False)
+    _call_cmd("iptables-legacy -t nat -A dnat-env%d -m tcp -p tcp --dport %d -j DNAT --to-destination %s:8080" % (envnum, wsport, remt), False)
+    _call_cmd("iptables-legacy -t nat -D PREROUTING -j dnat-env%d" % (envnum), False)
+    _call_cmd("iptables-legacy -t nat -D OUTPUT -j dnat-env%d" % (envnum), False)
+    _call_cmd("iptables-legacy -t nat -D POSTROUTING -o ctl%d -j MASQUERADE" % (envnum), False)
+    _call_cmd("iptables-legacy -t nat -A PREROUTING -j dnat-env%d" % (envnum), False)
+    _call_cmd("iptables-legacy -t nat -A OUTPUT -j dnat-env%d" % (envnum), False)
+    _call_cmd("iptables-legacy -t nat -A POSTROUTING -o ctl%d -j MASQUERADE" % (envnum), False)
 
 if __name__ == '__main__':
     try:
