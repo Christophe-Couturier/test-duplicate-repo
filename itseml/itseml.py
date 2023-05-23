@@ -559,7 +559,7 @@ def process_message(params):
 
     if license_status :
         try:
-            destination = "/usr/local/lib/python2.7/dist-packages/itseml/templates/mw/yogoko-middleware.license"
+            destination = os.path.join(TMPL_PATH, "mw", "yogoko-middleware.license")
             copyfile("/etc/mw-license/yogoko-middleware.license", destination)
             logging.info("license are copied in %s directory", envname)
         except distutils.errors.DistutilsFileError, e:
