@@ -26,7 +26,6 @@ setup(name='itseml',
                                            'service_files/license-mw-server.service']),
                   ('/etc/mw-license', ['mw-server/choirconf.xml',
                                        'mw-server/log4j.properties',
-                                       'mw-server/yogoko-middleware.p12',
                                        'mw-server/truststore.jks'])]
 
      )
