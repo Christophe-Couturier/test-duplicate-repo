@@ -1,0 +1,40 @@
+{
+    "itsnet": {
+        "gn_addr": "0:0:0:1",
+        "geobc_fwd_alg": 0,
+        "proto_version": 1
+    },
+    "services": {
+        "40-SpatService": {
+            "cache.id": 2,
+            "pubsub.spatsenderid": 71,
+            "pubsub.spatreceiverid": 72,
+            "pubsub.spathandlerid": 73,
+            "pubsub.mapsenderid": 81,
+            "pubsub.mapreceiverid": 82,
+            "pubsub.inspat": 24,
+            "pubsub.outspat": 34,
+            "pubsub.ownspat": 44,
+            "pubsub.configspat": 54,
+            "pubsub.inmap": 23,
+            "pubsub.outmap": 33,
+            "pubsub.ownmap": 43,
+            "socket.map": "gn+btp://cch:2003",
+            "socket.spat": "gn+btp://cch:2004",
+            "standard.reference": "ETSI_TS_103301",
+            "standard.version": "1.1.1",
+            "emission.interval": 1000,
+            "sender.updateheader": false,
+            "index.size": 1,
+            "signalgroup1.id": 89
+        },
+        "80-Recorder": {
+		"msgids.count": 4,
+		"msgid1.id": 24,
+		"msgid2.id": 44,
+		"msgid3.id": 23,
+		"msgid4.id": 43
+        }
+        
+    }
+}
